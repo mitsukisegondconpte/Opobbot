@@ -1,107 +1,94 @@
-/// <reference types="node" />
-import * as http from "http";
-import { HttpError } from "http-errors";
-import * as send from "send";
-
 /**
- * Create a new middleware function to serve files from within a given root directory.
- * The file to serve will be determined by combining req.url with the provided root directory.
- * When a file is not found, instead of sending a 404 response, this module will instead call next() to move on to the next middleware, allowing for stacking and fall-backs.
+ * License for programmatically and manually incorporated
+ * documentation aka. `JSDoc` from https://github.com/nodejs/node/tree/master/doc
+ *
+ * Copyright Node.js contributors. All rights reserved.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
  */
-declare function serveStatic<R extends http.ServerResponse>(
-    root: string,
-    options?: serveStatic.ServeStaticOptions<R>,
-): serveStatic.RequestHandler<R>;
 
-declare namespace serveStatic {
-    var mime: typeof send.mime;
-    interface ServeStaticOptions<R extends http.ServerResponse = http.ServerResponse> {
-        /**
-         * Enable or disable accepting ranged requests, defaults to true.
-         * Disabling this will not send Accept-Ranges and ignore the contents of the Range request header.
-         */
-        acceptRanges?: boolean | undefined;
+// NOTE: These definitions support Node.js and TypeScript 5.8+.
 
-        /**
-         * Enable or disable setting Cache-Control response header, defaults to true.
-         * Disabling this will ignore the immutable and maxAge options.
-         */
-        cacheControl?: boolean | undefined;
+// Reference required TypeScript libraries:
+/// <reference lib="es2020" />
+/// <reference lib="esnext.disposable" />
+/// <reference lib="esnext.float16" />
 
-        /**
-         * Set how "dotfiles" are treated when encountered. A dotfile is a file or directory that begins with a dot (".").
-         * Note this check is done on the path itself without checking if the path actually exists on the disk.
-         * If root is specified, only the dotfiles above the root are checked (i.e. the root itself can be within a dotfile when when set to "deny").
-         * The default value is 'ignore'.
-         * 'allow' No special treatment for dotfiles
-         * 'deny' Send a 403 for any request for a dotfile
-         * 'ignore' Pretend like the dotfile does not exist and call next()
-         */
-        dotfiles?: string | undefined;
+// Iterator definitions required for compatibility with TypeScript <5.6:
+/// <reference path="compatibility/iterators.d.ts" />
 
-        /**
-         * Enable or disable etag generation, defaults to true.
-         */
-        etag?: boolean | undefined;
+// Definitions for Node.js modules specific to TypeScript 5.7+:
+/// <reference path="globals.typedarray.d.ts" />
+/// <reference path="buffer.buffer.d.ts" />
 
-        /**
-         * Set file extension fallbacks. When set, if a file is not found, the given extensions will be added to the file name and search for.
-         * The first that exists will be served. Example: ['html', 'htm'].
-         * The default value is false.
-         */
-        extensions?: string[] | false | undefined;
-
-        /**
-         * Let client errors fall-through as unhandled requests, otherwise forward a client error.
-         * The default value is true.
-         */
-        fallthrough?: boolean | undefined;
-
-        /**
-         * Enable or disable the immutable directive in the Cache-Control response header.
-         * If enabled, the maxAge option should also be specified to enable caching. The immutable directive will prevent supported clients from making conditional requests during the life of the maxAge option to check if the file has changed.
-         */
-        immutable?: boolean | undefined;
-
-        /**
-         * By default this module will send "index.html" files in response to a request on a directory.
-         * To disable this set false or to supply a new index pass a string or an array in preferred order.
-         */
-        index?: boolean | string | string[] | undefined;
-
-        /**
-         * Enable or disable Last-Modified header, defaults to true. Uses the file system's last modified value.
-         */
-        lastModified?: boolean | undefined;
-
-        /**
-         * Provide a max-age in milliseconds for http caching, defaults to 0. This can also be a string accepted by the ms module.
-         */
-        maxAge?: number | string | undefined;
-
-        /**
-         * Redirect to trailing "/" when the pathname is a dir. Defaults to true.
-         */
-        redirect?: boolean | undefined;
-
-        /**
-         * Function to set custom headers on response. Alterations to the headers need to occur synchronously.
-         * The function is called as fn(res, path, stat), where the arguments are:
-         * res the response object
-         * path the file path that is being sent
-         * stat the stat object of the file that is being sent
-         */
-        setHeaders?: ((res: R, path: string, stat: any) => any) | undefined;
-    }
-
-    interface RequestHandler<R extends http.ServerResponse> {
-        (request: http.IncomingMessage, response: R, next: (err?: HttpError) => void): any;
-    }
-
-    interface RequestHandlerConstructor<R extends http.ServerResponse> {
-        (root: string, options?: ServeStaticOptions<R>): RequestHandler<R>;
-        mime: typeof send.mime;
-    }
-}
-
-export = serveStatic;
+// Definitions for Node.js modules that are not specific to any version of TypeScript:
+/// <reference path="globals.d.ts" />
+/// <reference path="assert.d.ts" />
+/// <reference path="assert/strict.d.ts" />
+/// <reference path="async_hooks.d.ts" />
+/// <reference path="buffer.d.ts" />
+/// <reference path="child_process.d.ts" />
+/// <reference path="cluster.d.ts" />
+/// <reference path="console.d.ts" />
+/// <reference path="constants.d.ts" />
+/// <reference path="crypto.d.ts" />
+/// <reference path="dgram.d.ts" />
+/// <reference path="diagnostics_channel.d.ts" />
+/// <reference path="dns.d.ts" />
+/// <reference path="dns/promises.d.ts" />
+/// <reference path="dns/promises.d.ts" />
+/// <reference path="domain.d.ts" />
+/// <reference path="dom-events.d.ts" />
+/// <reference path="events.d.ts" />
+/// <reference path="fs.d.ts" />
+/// <reference path="fs/promises.d.ts" />
+/// <reference path="http.d.ts" />
+/// <reference path="http2.d.ts" />
+/// <reference path="https.d.ts" />
+/// <reference path="inspector.d.ts" />
+/// <reference path="module.d.ts" />
+/// <reference path="net.d.ts" />
+/// <reference path="os.d.ts" />
+/// <reference path="path.d.ts" />
+/// <reference path="perf_hooks.d.ts" />
+/// <reference path="process.d.ts" />
+/// <reference path="punycode.d.ts" />
+/// <reference path="querystring.d.ts" />
+/// <reference path="readline.d.ts" />
+/// <reference path="readline/promises.d.ts" />
+/// <reference path="repl.d.ts" />
+/// <reference path="sea.d.ts" />
+/// <reference path="sqlite.d.ts" />
+/// <reference path="stream.d.ts" />
+/// <reference path="stream/promises.d.ts" />
+/// <reference path="stream/consumers.d.ts" />
+/// <reference path="stream/web.d.ts" />
+/// <reference path="string_decoder.d.ts" />
+/// <reference path="test.d.ts" />
+/// <reference path="timers.d.ts" />
+/// <reference path="timers/promises.d.ts" />
+/// <reference path="tls.d.ts" />
+/// <reference path="trace_events.d.ts" />
+/// <reference path="tty.d.ts" />
+/// <reference path="url.d.ts" />
+/// <reference path="util.d.ts" />
+/// <reference path="v8.d.ts" />
+/// <reference path="vm.d.ts" />
+/// <reference path="wasi.d.ts" />
+/// <reference path="worker_threads.d.ts" />
+/// <reference path="zlib.d.ts" />
