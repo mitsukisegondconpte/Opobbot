@@ -1,112 +1,125 @@
-Metadata-Version: 2.4
-Name: aiosignal
-Version: 1.4.0
-Summary: aiosignal: a list of registered asynchronous callbacks
-Home-page: https://github.com/aio-libs/aiosignal
-Maintainer: aiohttp team <team@aiohttp.org>
-Maintainer-email: team@aiohttp.org
-License: Apache 2.0
-Project-URL: Chat: Gitter, https://gitter.im/aio-libs/Lobby
-Project-URL: CI: GitHub Actions, https://github.com/aio-libs/aiosignal/actions
-Project-URL: Coverage: codecov, https://codecov.io/github/aio-libs/aiosignal
-Project-URL: Docs: RTD, https://docs.aiosignal.org
-Project-URL: GitHub: issues, https://github.com/aio-libs/aiosignal/issues
-Project-URL: GitHub: repo, https://github.com/aio-libs/aiosignal
-Classifier: License :: OSI Approved :: Apache Software License
-Classifier: Intended Audience :: Developers
-Classifier: Programming Language :: Python
-Classifier: Programming Language :: Python :: 3
-Classifier: Programming Language :: Python :: 3 :: Only
+Metadata-Version: 2.2
+Name: Telethon
+Version: 1.40.0
+Summary: Full-featured Telegram client library for Python 3
+Home-page: https://github.com/LonamiWebs/Telethon
+Download-URL: https://github.com/LonamiWebs/Telethon/releases
+Author: Lonami Exo
+Author-email: totufals@hotmail.com
+License: MIT
+Keywords: telegram api chat client library messaging mtproto
 Classifier: Development Status :: 5 - Production/Stable
-Classifier: Operating System :: POSIX
-Classifier: Operating System :: MacOS :: MacOS X
-Classifier: Operating System :: Microsoft :: Windows
-Classifier: Framework :: AsyncIO
-Requires-Python: >=3.9
-Description-Content-Type: text/x-rst
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Communications :: Chat
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Requires-Python: >=3.5
 License-File: LICENSE
-Requires-Dist: frozenlist>=1.1.0
-Requires-Dist: typing-extensions>=4.2; python_version < "3.13"
-Dynamic: license-file
+Requires-Dist: pyaes
+Requires-Dist: rsa
+Provides-Extra: cryptg
+Requires-Dist: cryptg; extra == "cryptg"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: download-url
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
 
-=========
-aiosignal
-=========
+Telethon
+========
+.. epigraph::
 
-.. image:: https://github.com/aio-libs/aiosignal/workflows/CI/badge.svg
-   :target: https://github.com/aio-libs/aiosignal/actions?query=workflow%3ACI
-   :alt: GitHub status for master branch
+  ⭐️ Thanks **everyone** who has starred the project, it means a lot!
 
-.. image:: https://codecov.io/gh/aio-libs/aiosignal/branch/master/graph/badge.svg?flag=pytest
-   :target: https://codecov.io/gh/aio-libs/aiosignal?flags[0]=pytest
-   :alt: codecov.io status for master branch
+|logo| **Telethon** is an asyncio_ **Python 3**
+MTProto_ library to interact with Telegram_'s API
+as a user or through a bot account (bot API alternative).
 
-.. image:: https://badge.fury.io/py/aiosignal.svg
-   :target: https://pypi.org/project/aiosignal
-   :alt: Latest PyPI package version
+.. important::
 
-.. image:: https://readthedocs.org/projects/aiosignal/badge/?version=latest
-   :target: https://aiosignal.readthedocs.io/
-   :alt: Latest Read The Docs
+    If you have code using Telethon before its 1.0 version, you must
+    read `Compatibility and Convenience`_ to learn how to migrate.
+    As with any third-party library for Telegram, be careful not to
+    break `Telegram's ToS`_ or `Telegram can ban the account`_.
 
-.. image:: https://img.shields.io/discourse/topics?server=https%3A%2F%2Faio-libs.discourse.group%2F
-   :target: https://aio-libs.discourse.group/
-   :alt: Discourse group for io-libs
+What is this?
+-------------
 
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/aio-libs/Lobby
-   :alt: Chat on Gitter
-
-Introduction
-============
-
-A project to manage callbacks in `asyncio` projects.
-
-``Signal`` is a list of registered asynchronous callbacks.
-
-The signal's life-cycle has two stages: after creation its content
-could be filled by using standard list operations: ``sig.append()``
-etc.
-
-After you call ``sig.freeze()`` the signal is *frozen*: adding, removing
-and dropping callbacks is forbidden.
-
-The only available operation is calling the previously registered
-callbacks by using ``await sig.send(data)``.
-
-For concrete usage examples see the `Signals
-<https://docs.aiohttp.org/en/stable/web_advanced.html#aiohttp-web-signals>
-section of the `Web Server Advanced
-<https://docs.aiohttp.org/en/stable/web_advanced.html>` chapter of the `aiohttp
-documentation`_.
+Telegram is a popular messaging application. This library is meant
+to make it easy for you to write Python programs that can interact
+with Telegram. Think of it as a wrapper that has already done the
+heavy job for you, so you can focus on developing an application.
 
 
-Installation
-------------
+Installing
+----------
 
-::
+.. code-block:: sh
 
-   $ pip install aiosignal
+  pip3 install telethon
 
 
-Documentation
-=============
+Creating a client
+-----------------
 
-https://aiosignal.readthedocs.io/
+.. code-block:: python
 
-License
-=======
+    from telethon import TelegramClient, events, sync
 
-``aiosignal`` is offered under the Apache 2 license.
+    # These example values won't work. You must get your own api_id and
+    # api_hash from https://my.telegram.org, under API Development.
+    api_id = 12345
+    api_hash = '0123456789abcdef0123456789abcdef'
 
-Source code
-===========
+    client = TelegramClient('session_name', api_id, api_hash)
+    client.start()
 
-The project is hosted on GitHub_
 
-Please file an issue in the `bug tracker
-<https://github.com/aio-libs/aiosignal/issues>`_ if you have found a bug
-or have some suggestions to improve the library.
+Doing stuff
+-----------
 
-.. _GitHub: https://github.com/aio-libs/aiosignal
-.. _aiohttp documentation: https://docs.aiohttp.org/
+.. code-block:: python
+
+    print(client.get_me().stringify())
+
+    client.send_message('username', 'Hello! Talking to you from Telethon')
+    client.send_file('username', '/home/myself/Pictures/holidays.jpg')
+
+    client.download_profile_photo('me')
+    messages = client.get_messages('username')
+    messages[0].download_media()
+
+    @client.on(events.NewMessage(pattern='(?i)hi|hello'))
+    async def handler(event):
+        await event.respond('Hey!')
+
+
+Next steps
+----------
+
+Do you like how Telethon looks? Check out `Read The Docs`_ for a more
+in-depth explanation, with examples, troubleshooting issues, and more
+useful information.
+
+.. _asyncio: https://docs.python.org/3/library/asyncio.html
+.. _MTProto: https://core.telegram.org/mtproto
+.. _Telegram: https://telegram.org
+.. _Compatibility and Convenience: https://docs.telethon.dev/en/stable/misc/compatibility-and-convenience.html
+.. _Telegram's ToS: https://core.telegram.org/api/terms
+.. _Telegram can ban the account: https://docs.telethon.dev/en/stable/quick-references/faq.html#my-account-was-deleted-limited-when-using-the-library
+.. _Read The Docs: https://docs.telethon.dev
+
+.. |logo| image:: logo.svg
+    :width: 24pt
+    :height: 24pt
