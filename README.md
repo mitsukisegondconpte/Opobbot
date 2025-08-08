@@ -1,15 +1,15 @@
 # Installation
-> `npm install --save @types/express-serve-static-core`
+> `npm install --save @types/send`
 
 # Summary
-This package contains type definitions for express-serve-static-core (http://expressjs.com).
+This package contains type definitions for send (https://github.com/pillarjs/send).
 
 # Details
-Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/express-serve-static-core.
+Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/send.
 
 ### Additional Details
- * Last updated: Tue, 08 Jul 2025 18:02:24 GMT
- * Dependencies: [@types/node](https://npmjs.com/package/@types/node), [@types/qs](https://npmjs.com/package/@types/qs), [@types/range-parser](https://npmjs.com/package/@types/range-parser), [@types/send](https://npmjs.com/package/@types/send)
+ * Last updated: Sat, 07 Jun 2025 02:15:25 GMT
+ * Dependencies: [@types/mime](https://npmjs.com/package/@types/mime), [@types/node](https://npmjs.com/package/@types/node)
 
 # Credits
-These definitions were written by [Boris Yankov](https://github.com/borisyankov), [Satana Charuwichitratana](https://github.com/micksatana), [Jose Luis Leon](https://github.com/JoseLion), [David Stephens](https://github.com/dwrss), and [Shin Ando](https://github.com/andoshin11).
+These definitions were written by [Mike Jerred](https://github.com/MikeJerred), [Piotr Błażejewicz](https://github.com/peterblazejewicz), and [Sebastian Beltran](https://github.com/bjohansebas).
