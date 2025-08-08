@@ -1,60 +1,97 @@
-# The MIT License (MIT)
+#  Copyright 2011 Sybren A. Stüvel <sybren@stuvel.eu>
 #
-# Copyright (c) 2014 Richard Moore
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 
-# Why to_bufferable?
-# Python 3 is very different from Python 2.x when it comes to strings of text
-# and strings of bytes; in Python 3, strings of bytes do not exist, instead to
-# represent arbitrary binary data, we must use the "bytes" object. This method
-# ensures the object behaves as we need it to.
+"""Utility functions."""
 
-def to_bufferable(binary):
-    return binary
+import sys
+from optparse import OptionParser
 
-def _get_byte(c):
-    return ord(c)
+import rsa.key
 
-try:
-    xrange
-except:
 
-    def to_bufferable(binary):
-        if isinstance(binary, bytes):
-            return binary
-        return bytes(ord(b) for b in binary)
+def private_to_public() -> None:
+    """Reads a private key and outputs the corresponding public key."""
 
-    def _get_byte(c):
-        return c
+    # Parse the CLI options
+    parser = OptionParser(
+        usage="usage: %prog [options]",
+        description="Reads a private key and outputs the "
+        "corresponding public key. Both private and public keys use "
+        "the format described in PKCS#1 v1.5",
+    )
 
-def append_PKCS7_padding(data):
-    pad = 16 - (len(data) % 16)
-    return data + to_bufferable(chr(pad) * pad)
+    parser.add_option(
+        "-i",
+        "--input",
+        dest="infilename",
+        type="string",
+        help="Input filename. Reads from stdin if not specified",
+    )
+    parser.add_option(
+        "-o",
+        "--output",
+        dest="outfilename",
+        type="string",
+        help="Output filename. Writes to stdout of not specified",
+    )
 
-def strip_PKCS7_padding(data):
-    if len(data) % 16 != 0:
-        raise ValueError("invalid length")
+    parser.add_option(
+        "--inform",
+        dest="inform",
+        help="key format of input - default PEM",
+        choices=("PEM", "DER"),
+        default="PEM",
+    )
 
-    pad = _get_byte(data[-1])
+    parser.add_option(
+        "--outform",
+        dest="outform",
+        help="key format of output - default PEM",
+        choices=("PEM", "DER"),
+        default="PEM",
+    )
 
-    if pad > 16:
-        raise ValueError("invalid padding byte")
+    (cli, cli_args) = parser.parse_args(sys.argv)
 
-    return data[:-pad]
+    # Read the input data
+    if cli.infilename:
+        print(
+            "Reading private key from %s in %s format" % (cli.infilename, cli.inform),
+            file=sys.stderr,
+        )
+        with open(cli.infilename, "rb") as infile:
+            in_data = infile.read()
+    else:
+        print("Reading private key from stdin in %s format" % cli.inform, file=sys.stderr)
+        in_data = sys.stdin.read().encode("ascii")
+
+    assert type(in_data) == bytes, type(in_data)
+
+    # Take the public fields and create a public key
+    priv_key = rsa.key.PrivateKey.load_pkcs1(in_data, cli.inform)
+    pub_key = rsa.key.PublicKey(priv_key.n, priv_key.e)
+
+    # Save to the output file
+    out_data = pub_key.save_pkcs1(cli.outform)
+
+    if cli.outfilename:
+        print(
+            "Writing public key to %s in %s format" % (cli.outfilename, cli.outform),
+            file=sys.stderr,
+        )
+        with open(cli.outfilename, "wb") as outfile:
+            outfile.write(out_data)
+    else:
+        print("Writing public key to stdout in %s format" % cli.outform, file=sys.stderr)
+        sys.stdout.write(out_data.decode("ascii"))
