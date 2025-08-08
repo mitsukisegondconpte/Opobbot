@@ -1,4 +1,8 @@
 Wheel-Version: 1.0
-Generator: flit 3.9.0
-Root-Is-Purelib: true
-Tag: py3-none-any
+Generator: setuptools (80.9.0)
+Root-Is-Purelib: false
+Tag: cp311-cp311-manylinux_2_5_x86_64
+Tag: cp311-cp311-manylinux1_x86_64
+Tag: cp311-cp311-manylinux_2_17_x86_64
+Tag: cp311-cp311-manylinux2014_x86_64
+
