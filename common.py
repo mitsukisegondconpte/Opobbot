@@ -1,180 +1,186 @@
-"""Errors not related to the Telegram API itself"""
-import struct
-import textwrap
+import abc
+import asyncio
+import warnings
 
-from ..tl import TLRequest
-
-
-class ReadCancelledError(Exception):
-    """Occurs when a read operation was cancelled."""
-    def __init__(self):
-        super().__init__('The read operation was cancelled.')
+from .. import utils
+from ..tl import TLObject, types
+from ..tl.custom.chatgetter import ChatGetter
 
 
-class TypeNotFoundError(Exception):
-    """
-    Occurs when a type is not found, for example,
-    when trying to read a TLObject with an invalid constructor code.
-    """
-    def __init__(self, invalid_constructor_id, remaining):
-        super().__init__(
-            'Could not find a matching Constructor ID for the TLObject '
-            'that was supposed to be read with ID {:08x}. See the FAQ '
-            'for more details. '
-            'Remaining bytes: {!r}'.format(invalid_constructor_id, remaining))
+async def _into_id_set(client, chats):
+    """Helper util to turn the input chat or chats into a set of IDs."""
+    if chats is None:
+        return None
 
-        self.invalid_constructor_id = invalid_constructor_id
-        self.remaining = remaining
+    if not utils.is_list_like(chats):
+        chats = (chats,)
 
-
-class InvalidChecksumError(Exception):
-    """
-    Occurs when using the TCP full mode and the checksum of a received
-    packet doesn't match the expected checksum.
-    """
-    def __init__(self, checksum, valid_checksum):
-        super().__init__(
-            'Invalid checksum ({} when {} was expected). '
-            'This packet should be skipped.'
-            .format(checksum, valid_checksum))
-
-        self.checksum = checksum
-        self.valid_checksum = valid_checksum
-
-
-class InvalidBufferError(BufferError):
-    """
-    Occurs when the buffer is invalid, and may contain an HTTP error code.
-    For instance, 404 means "forgotten/broken authorization key", while
-    """
-    def __init__(self, payload):
-        self.payload = payload
-        if len(payload) == 4:
-            self.code = -struct.unpack('<i', payload)[0]
-            super().__init__(
-                'Invalid response buffer (HTTP code {})'.format(self.code))
+    result = set()
+    for chat in chats:
+        if isinstance(chat, int):
+            if chat < 0:
+                result.add(chat)  # Explicitly marked IDs are negative
+            else:
+                result.update({  # Support all valid types of peers
+                    utils.get_peer_id(types.PeerUser(chat)),
+                    utils.get_peer_id(types.PeerChat(chat)),
+                    utils.get_peer_id(types.PeerChannel(chat)),
+                })
+        elif isinstance(chat, TLObject) and chat.SUBCLASS_OF_ID == 0x2d45687:
+            # 0x2d45687 == crc32(b'Peer')
+            result.add(utils.get_peer_id(chat))
         else:
-            self.code = None
-            super().__init__(
-                'Invalid response buffer (too short {})'.format(self.payload))
+            chat = await client.get_input_entity(chat)
+            if isinstance(chat, types.InputPeerSelf):
+                chat = await client.get_me(input_peer=True)
+            result.add(utils.get_peer_id(chat))
+
+    return result
 
 
-class AuthKeyNotFound(Exception):
+class EventBuilder(abc.ABC):
     """
-    The server claims it doesn't know about the authorization key (session
-    file) currently being used. This might be because it either has never
-    seen this authorization key, or it used to know about the authorization
-    key but has forgotten it, either temporarily or permanently (possibly
-    due to server errors).
+    The common event builder, with builtin support to filter per chat.
 
-    If the issue persists, you may need to recreate the session file and login
-    again. This is not done automatically because it is not possible to know
-    if the issue is temporary or permanent.
+    Args:
+        chats (`entity`, optional):
+            May be one or more entities (username/peer/etc.), preferably IDs.
+            By default, only matching chats will be handled.
+
+        blacklist_chats (`bool`, optional):
+            Whether to treat the chats as a blacklist instead of
+            as a whitelist (default). This means that every chat
+            will be handled *except* those specified in ``chats``
+            which will be ignored if ``blacklist_chats=True``.
+
+        func (`callable`, optional):
+            A callable (async or not) function that should accept the event as input
+            parameter, and return a value indicating whether the event
+            should be dispatched or not (any truthy value will do, it
+            does not need to be a `bool`). It works like a custom filter:
+
+            .. code-block:: python
+
+                @client.on(events.NewMessage(func=lambda e: e.is_private))
+                async def handler(event):
+                    pass  # code here
     """
-    def __init__(self):
-        super().__init__(textwrap.dedent(self.__class__.__doc__))
+    def __init__(self, chats=None, *, blacklist_chats=False, func=None):
+        self.chats = chats
+        self.blacklist_chats = bool(blacklist_chats)
+        self.resolved = False
+        self.func = func
+        self._resolve_lock = None
+
+    @classmethod
+    @abc.abstractmethod
+    def build(cls, update, others=None, self_id=None):
+        """
+        Builds an event for the given update if possible, or returns None.
+
+        `others` are the rest of updates that came in the same container
+        as the current `update`.
+
+        `self_id` should be the current user's ID, since it is required
+        for some events which lack this information but still need it.
+        """
+        # TODO So many parameters specific to only some update types seems dirty
+
+    async def resolve(self, client):
+        """Helper method to allow event builders to be resolved before usage"""
+        if self.resolved:
+            return
+
+        if not self._resolve_lock:
+            self._resolve_lock = asyncio.Lock()
+
+        async with self._resolve_lock:
+            if not self.resolved:
+                await self._resolve(client)
+                self.resolved = True
+
+    async def _resolve(self, client):
+        self.chats = await _into_id_set(client, self.chats)
+
+    def filter(self, event):
+        """
+        Returns a truthy value if the event passed the filter and should be
+        used, or falsy otherwise. The return value may need to be awaited.
+
+        The events must have been resolved before this can be called.
+        """
+        if not self.resolved:
+            return
+
+        if self.chats is not None:
+            # Note: the `event.chat_id` property checks if it's `None` for us
+            inside = event.chat_id in self.chats
+            if inside == self.blacklist_chats:
+                # If this chat matches but it's a blacklist ignore.
+                # If it doesn't match but it's a whitelist ignore.
+                return
+
+        if not self.func:
+            return True
+
+        # Return the result of func directly as it may need to be awaited
+        return self.func(event)
 
 
-class SecurityError(Exception):
+class EventCommon(ChatGetter, abc.ABC):
     """
-    Generic security error, mostly used when generating a new AuthKey.
+    Intermediate class with common things to all events.
+
+    Remember that this class implements `ChatGetter
+    <telethon.tl.custom.chatgetter.ChatGetter>` which
+    means you have access to all chat properties and methods.
+
+    In addition, you can access the `original_update`
+    field which contains the original :tl:`Update`.
     """
-    def __init__(self, *args):
-        if not args:
-            args = ['A security check failed.']
-        super().__init__(*args)
+    _event_name = 'Event'
+
+    def __init__(self, chat_peer=None, msg_id=None, broadcast=None):
+        super().__init__(chat_peer, broadcast=broadcast)
+        self._entities = {}
+        self._client = None
+        self._message_id = msg_id
+        self.original_update = None
+
+    def _set_client(self, client):
+        """
+        Setter so subclasses can act accordingly when the client is set.
+        """
+        self._client = client
+        if self._chat_peer:
+            self._chat, self._input_chat = utils._get_entity_pair(
+                self.chat_id, self._entities, client._mb_entity_cache)
+        else:
+            self._chat = self._input_chat = None
+
+    @property
+    def client(self):
+        """
+        The `telethon.TelegramClient` that created this event.
+        """
+        return self._client
+
+    def __str__(self):
+        return TLObject.pretty_format(self.to_dict())
+
+    def stringify(self):
+        return TLObject.pretty_format(self.to_dict(), indent=0)
+
+    def to_dict(self):
+        d = {k: v for k, v in self.__dict__.items() if k[0] != '_'}
+        d['_'] = self._event_name
+        return d
 
 
-class CdnFileTamperedError(SecurityError):
-    """
-    Occurs when there's a hash mismatch between the decrypted CDN file
-    and its expected hash.
-    """
-    def __init__(self):
-        super().__init__(
-            'The CDN file has been altered and its download cancelled.'
-        )
-
-
-class AlreadyInConversationError(Exception):
-    """
-    Occurs when another exclusive conversation is opened in the same chat.
-    """
-    def __init__(self):
-        super().__init__(
-            'Cannot open exclusive conversation in a '
-            'chat that already has one open conversation'
-        )
-
-
-class BadMessageError(Exception):
-    """Occurs when handling a bad_message_notification."""
-    ErrorMessages = {
-        16:
-        'msg_id too low (most likely, client time is wrong it would be '
-        'worthwhile to synchronize it using msg_id notifications and re-send '
-        'the original message with the "correct" msg_id or wrap it in a '
-        'container with a new msg_id if the original message had waited too '
-        'long on the client to be transmitted).',
-        17:
-        'msg_id too high (similar to the previous case, the client time has '
-        'to be synchronized, and the message re-sent with the correct msg_id).',
-        18:
-        'Incorrect two lower order msg_id bits (the server expects client '
-        'message msg_id to be divisible by 4).',
-        19:
-        'Container msg_id is the same as msg_id of a previously received '
-        'message (this must never happen).',
-        20:
-        'Message too old, and it cannot be verified whether the server has '
-        'received a message with this msg_id or not.',
-        32:
-        'msg_seqno too low (the server has already received a message with a '
-        'lower msg_id but with either a higher or an equal and odd seqno).',
-        33:
-        'msg_seqno too high (similarly, there is a message with a higher '
-        'msg_id but with either a lower or an equal and odd seqno).',
-        34:
-        'An even msg_seqno expected (irrelevant message), but odd received.',
-        35:
-        'Odd msg_seqno expected (relevant message), but even received.',
-        48:
-        'Incorrect server salt (in this case, the bad_server_salt response '
-        'is received with the correct salt, and the message is to be re-sent '
-        'with it).',
-        64:
-        'Invalid container.'
-    }
-
-    def __init__(self, request, code):
-        super().__init__(request, self.ErrorMessages.get(
-            code,
-            'Unknown error code (this should not happen): {}.'.format(code)))
-
-        self.code = code
-
-
-class MultiError(Exception):
-    """Exception container for multiple `TLRequest`'s."""
-
-    def __new__(cls, exceptions, result, requests):
-        if len(result) != len(exceptions) != len(requests):
-            raise ValueError(
-                'Need result, exception and request for each error')
-        for e, req in zip(exceptions, requests):
-            if not isinstance(e, BaseException) and e is not None:
-                raise TypeError(
-                    "Expected an exception object, not '%r'" % e
-                )
-            if not isinstance(req, TLRequest):
-                raise TypeError(
-                    "Expected TLRequest object, not '%r'" % req
-                )
-
-        if len(exceptions) == 1:
-            return exceptions[0]
-        self = BaseException.__new__(cls)
-        self.exceptions = list(exceptions)
-        self.results = list(result)
-        self.requests = list(requests)
-        return self
+def name_inner_event(cls):
+    """Decorator to rename cls.Event 'Event' as 'cls.Event'"""
+    if hasattr(cls, 'Event'):
+        cls.Event._event_name = '{}.Event'.format(cls.__name__)
+    else:
+        warnings.warn('Class {} does not have a inner Event'.format(cls))
+    return cls
