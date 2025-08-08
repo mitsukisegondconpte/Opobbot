@@ -1,59 +1,45 @@
-"""Multidict implementation.
-
-HTTP Headers and URL query string require specific data structure:
-multidict. It behaves mostly like a dict but it can have
-several values for the same key.
-"""
-
-from typing import TYPE_CHECKING
-
-from ._abc import MultiMapping, MutableMultiMapping
-from ._compat import USE_EXTENSIONS
-
-__all__ = (
-    "MultiMapping",
-    "MutableMultiMapping",
-    "MultiDictProxy",
-    "CIMultiDictProxy",
-    "MultiDict",
-    "CIMultiDict",
-    "upstr",
-    "istr",
-    "getversion",
+from .core import (
+    IDNABidiError,
+    IDNAError,
+    InvalidCodepoint,
+    InvalidCodepointContext,
+    alabel,
+    check_bidi,
+    check_hyphen_ok,
+    check_initial_combiner,
+    check_label,
+    check_nfc,
+    decode,
+    encode,
+    ulabel,
+    uts46_remap,
+    valid_contextj,
+    valid_contexto,
+    valid_label_length,
+    valid_string_length,
 )
+from .intranges import intranges_contain
+from .package_data import __version__
 
-__version__ = "6.6.3"
-
-
-if TYPE_CHECKING or not USE_EXTENSIONS:
-    from ._multidict_py import (
-        CIMultiDict,
-        CIMultiDictProxy,
-        MultiDict,
-        MultiDictProxy,
-        getversion,
-        istr,
-    )
-else:
-    from collections.abc import ItemsView, KeysView, ValuesView
-
-    from ._multidict import (
-        CIMultiDict,
-        CIMultiDictProxy,
-        MultiDict,
-        MultiDictProxy,
-        _ItemsView,
-        _KeysView,
-        _ValuesView,
-        getversion,
-        istr,
-    )
-
-    MultiMapping.register(MultiDictProxy)
-    MutableMultiMapping.register(MultiDict)
-    KeysView.register(_KeysView)
-    ItemsView.register(_ItemsView)
-    ValuesView.register(_ValuesView)
-
-
-upstr = istr
+__all__ = [
+    "__version__",
+    "IDNABidiError",
+    "IDNAError",
+    "InvalidCodepoint",
+    "InvalidCodepointContext",
+    "alabel",
+    "check_bidi",
+    "check_hyphen_ok",
+    "check_initial_combiner",
+    "check_label",
+    "check_nfc",
+    "decode",
+    "encode",
+    "intranges_contain",
+    "ulabel",
+    "uts46_remap",
+    "valid_contextj",
+    "valid_contexto",
+    "valid_label_length",
+    "valid_string_length",
+]
