@@ -1,184 +1,180 @@
-#  Copyright 2011 Sybren A. Stüvel <sybren@stuvel.eu>
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      https://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+"""Errors not related to the Telegram API itself"""
+import struct
+import textwrap
 
-"""Common functionality shared by several modules."""
-
-import typing
+from ..tl import TLRequest
 
 
-class NotRelativePrimeError(ValueError):
-    def __init__(self, a: int, b: int, d: int, msg: str = "") -> None:
-        super().__init__(msg or "%d and %d are not relatively prime, divider=%i" % (a, b, d))
-        self.a = a
-        self.b = b
-        self.d = d
+class ReadCancelledError(Exception):
+    """Occurs when a read operation was cancelled."""
+    def __init__(self):
+        super().__init__('The read operation was cancelled.')
 
 
-def bit_size(num: int) -> int:
+class TypeNotFoundError(Exception):
     """
-    Number of bits needed to represent a integer excluding any prefix
-    0 bits.
-
-    Usage::
-
-        >>> bit_size(1023)
-        10
-        >>> bit_size(1024)
-        11
-        >>> bit_size(1025)
-        11
-
-    :param num:
-        Integer value. If num is 0, returns 0. Only the absolute value of the
-        number is considered. Therefore, signed integers will be abs(num)
-        before the number's bit length is determined.
-    :returns:
-        Returns the number of bits in the integer.
+    Occurs when a type is not found, for example,
+    when trying to read a TLObject with an invalid constructor code.
     """
+    def __init__(self, invalid_constructor_id, remaining):
+        super().__init__(
+            'Could not find a matching Constructor ID for the TLObject '
+            'that was supposed to be read with ID {:08x}. See the FAQ '
+            'for more details. '
+            'Remaining bytes: {!r}'.format(invalid_constructor_id, remaining))
 
-    try:
-        return num.bit_length()
-    except AttributeError as ex:
-        raise TypeError("bit_size(num) only supports integers, not %r" % type(num)) from ex
+        self.invalid_constructor_id = invalid_constructor_id
+        self.remaining = remaining
 
 
-def byte_size(number: int) -> int:
+class InvalidChecksumError(Exception):
     """
-    Returns the number of bytes required to hold a specific long number.
-
-    The number of bytes is rounded up.
-
-    Usage::
-
-        >>> byte_size(1 << 1023)
-        128
-        >>> byte_size((1 << 1024) - 1)
-        128
-        >>> byte_size(1 << 1024)
-        129
-
-    :param number:
-        An unsigned integer
-    :returns:
-        The number of bytes required to hold a specific long number.
+    Occurs when using the TCP full mode and the checksum of a received
+    packet doesn't match the expected checksum.
     """
-    if number == 0:
-        return 1
-    return ceil_div(bit_size(number), 8)
+    def __init__(self, checksum, valid_checksum):
+        super().__init__(
+            'Invalid checksum ({} when {} was expected). '
+            'This packet should be skipped.'
+            .format(checksum, valid_checksum))
+
+        self.checksum = checksum
+        self.valid_checksum = valid_checksum
 
 
-def ceil_div(num: int, div: int) -> int:
+class InvalidBufferError(BufferError):
     """
-    Returns the ceiling function of a division between `num` and `div`.
-
-    Usage::
-
-        >>> ceil_div(100, 7)
-        15
-        >>> ceil_div(100, 10)
-        10
-        >>> ceil_div(1, 4)
-        1
-
-    :param num: Division's numerator, a number
-    :param div: Division's divisor, a number
-
-    :return: Rounded up result of the division between the parameters.
+    Occurs when the buffer is invalid, and may contain an HTTP error code.
+    For instance, 404 means "forgotten/broken authorization key", while
     """
-    quanta, mod = divmod(num, div)
-    if mod:
-        quanta += 1
-    return quanta
+    def __init__(self, payload):
+        self.payload = payload
+        if len(payload) == 4:
+            self.code = -struct.unpack('<i', payload)[0]
+            super().__init__(
+                'Invalid response buffer (HTTP code {})'.format(self.code))
+        else:
+            self.code = None
+            super().__init__(
+                'Invalid response buffer (too short {})'.format(self.payload))
 
 
-def extended_gcd(a: int, b: int) -> typing.Tuple[int, int, int]:
-    """Returns a tuple (r, i, j) such that r = gcd(a, b) = ia + jb"""
-    # r = gcd(a,b) i = multiplicitive inverse of a mod b
-    #      or      j = multiplicitive inverse of b mod a
-    # Neg return values for i or j are made positive mod b or a respectively
-    # Iterateive Version is faster and uses much less stack space
-    x = 0
-    y = 1
-    lx = 1
-    ly = 0
-    oa = a  # Remember original a/b to remove
-    ob = b  # negative values from return results
-    while b != 0:
-        q = a // b
-        (a, b) = (b, a % b)
-        (x, lx) = ((lx - (q * x)), x)
-        (y, ly) = ((ly - (q * y)), y)
-    if lx < 0:
-        lx += ob  # If neg wrap modulo original b
-    if ly < 0:
-        ly += oa  # If neg wrap modulo original a
-    return a, lx, ly  # Return only positive values
-
-
-def inverse(x: int, n: int) -> int:
-    """Returns the inverse of x % n under multiplication, a.k.a x^-1 (mod n)
-
-    >>> inverse(7, 4)
-    3
-    >>> (inverse(143, 4) * 143) % 4
-    1
+class AuthKeyNotFound(Exception):
     """
+    The server claims it doesn't know about the authorization key (session
+    file) currently being used. This might be because it either has never
+    seen this authorization key, or it used to know about the authorization
+    key but has forgotten it, either temporarily or permanently (possibly
+    due to server errors).
 
-    (divider, inv, _) = extended_gcd(x, n)
-
-    if divider != 1:
-        raise NotRelativePrimeError(x, n, divider)
-
-    return inv
-
-
-def crt(a_values: typing.Iterable[int], modulo_values: typing.Iterable[int]) -> int:
-    """Chinese Remainder Theorem.
-
-    Calculates x such that x = a[i] (mod m[i]) for each i.
-
-    :param a_values: the a-values of the above equation
-    :param modulo_values: the m-values of the above equation
-    :returns: x such that x = a[i] (mod m[i]) for each i
-
-
-    >>> crt([2, 3], [3, 5])
-    8
-
-    >>> crt([2, 3, 2], [3, 5, 7])
-    23
-
-    >>> crt([2, 3, 0], [7, 11, 15])
-    135
+    If the issue persists, you may need to recreate the session file and login
+    again. This is not done automatically because it is not possible to know
+    if the issue is temporary or permanent.
     """
-
-    m = 1
-    x = 0
-
-    for modulo in modulo_values:
-        m *= modulo
-
-    for (m_i, a_i) in zip(modulo_values, a_values):
-        M_i = m // m_i
-        inv = inverse(M_i, m_i)
-
-        x = (x + a_i * M_i * inv) % m
-
-    return x
+    def __init__(self):
+        super().__init__(textwrap.dedent(self.__class__.__doc__))
 
 
-if __name__ == "__main__":
-    import doctest
+class SecurityError(Exception):
+    """
+    Generic security error, mostly used when generating a new AuthKey.
+    """
+    def __init__(self, *args):
+        if not args:
+            args = ['A security check failed.']
+        super().__init__(*args)
 
-    doctest.testmod()
+
+class CdnFileTamperedError(SecurityError):
+    """
+    Occurs when there's a hash mismatch between the decrypted CDN file
+    and its expected hash.
+    """
+    def __init__(self):
+        super().__init__(
+            'The CDN file has been altered and its download cancelled.'
+        )
+
+
+class AlreadyInConversationError(Exception):
+    """
+    Occurs when another exclusive conversation is opened in the same chat.
+    """
+    def __init__(self):
+        super().__init__(
+            'Cannot open exclusive conversation in a '
+            'chat that already has one open conversation'
+        )
+
+
+class BadMessageError(Exception):
+    """Occurs when handling a bad_message_notification."""
+    ErrorMessages = {
+        16:
+        'msg_id too low (most likely, client time is wrong it would be '
+        'worthwhile to synchronize it using msg_id notifications and re-send '
+        'the original message with the "correct" msg_id or wrap it in a '
+        'container with a new msg_id if the original message had waited too '
+        'long on the client to be transmitted).',
+        17:
+        'msg_id too high (similar to the previous case, the client time has '
+        'to be synchronized, and the message re-sent with the correct msg_id).',
+        18:
+        'Incorrect two lower order msg_id bits (the server expects client '
+        'message msg_id to be divisible by 4).',
+        19:
+        'Container msg_id is the same as msg_id of a previously received '
+        'message (this must never happen).',
+        20:
+        'Message too old, and it cannot be verified whether the server has '
+        'received a message with this msg_id or not.',
+        32:
+        'msg_seqno too low (the server has already received a message with a '
+        'lower msg_id but with either a higher or an equal and odd seqno).',
+        33:
+        'msg_seqno too high (similarly, there is a message with a higher '
+        'msg_id but with either a lower or an equal and odd seqno).',
+        34:
+        'An even msg_seqno expected (irrelevant message), but odd received.',
+        35:
+        'Odd msg_seqno expected (relevant message), but even received.',
+        48:
+        'Incorrect server salt (in this case, the bad_server_salt response '
+        'is received with the correct salt, and the message is to be re-sent '
+        'with it).',
+        64:
+        'Invalid container.'
+    }
+
+    def __init__(self, request, code):
+        super().__init__(request, self.ErrorMessages.get(
+            code,
+            'Unknown error code (this should not happen): {}.'.format(code)))
+
+        self.code = code
+
+
+class MultiError(Exception):
+    """Exception container for multiple `TLRequest`'s."""
+
+    def __new__(cls, exceptions, result, requests):
+        if len(result) != len(exceptions) != len(requests):
+            raise ValueError(
+                'Need result, exception and request for each error')
+        for e, req in zip(exceptions, requests):
+            if not isinstance(e, BaseException) and e is not None:
+                raise TypeError(
+                    "Expected an exception object, not '%r'" % e
+                )
+            if not isinstance(req, TLRequest):
+                raise TypeError(
+                    "Expected TLRequest object, not '%r'" % req
+                )
+
+        if len(exceptions) == 1:
+            return exceptions[0]
+        self = BaseException.__new__(cls)
+        self.exceptions = list(exceptions)
+        self.results = list(result)
+        self.requests = list(requests)
+        return self
