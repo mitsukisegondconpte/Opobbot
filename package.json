@@ -1,45 +1,18 @@
 {
-    "name": "@types/express",
-    "version": "5.0.3",
-    "description": "TypeScript definitions for express",
-    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/express",
-    "license": "MIT",
-    "contributors": [
-        {
-            "name": "Boris Yankov",
-            "githubUsername": "borisyankov",
-            "url": "https://github.com/borisyankov"
-        },
-        {
-            "name": "Puneet Arora",
-            "githubUsername": "puneetar",
-            "url": "https://github.com/puneetar"
-        },
-        {
-            "name": "Dylan Frankland",
-            "githubUsername": "dfrankland",
-            "url": "https://github.com/dfrankland"
-        },
-        {
-            "name": "Sebastian Beltran",
-            "githubUsername": "bjohansebas",
-            "url": "https://github.com/bjohansebas"
-        }
-    ],
-    "main": "",
-    "types": "index.d.ts",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
-        "directory": "types/express"
-    },
-    "scripts": {},
-    "dependencies": {
-        "@types/body-parser": "*",
-        "@types/express-serve-static-core": "^5.0.0",
-        "@types/serve-static": "*"
-    },
-    "peerDependencies": {},
-    "typesPublisherContentHash": "50a15d13b8596ea6054e9e404451e427c71c41ab505b7dc01a72b122e2ee16f6",
-    "typeScriptVersion": "5.1"
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "A comprehensive WhatsApp bot with Telegram music bridge, interactive games, and multi-service architecture using Node.js and Python.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.18",
+    "axios": "^1.11.0",
+    "express": "^5.1.0",
+    "qrcode-terminal": "^0.12.0"
+  }
 }
