@@ -1,60 +1,59 @@
-#  Copyright 2011 Sybren A. Stüvel <sybren@stuvel.eu>
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      https://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-"""RSA module
+import sys
+from typing import Any, Awaitable, Callable, TypeVar
 
-Module for calculating large primes, and RSA encryption, decryption, signing
-and verification. Includes generating public and private keys.
+from frozenlist import FrozenList
 
-WARNING: this implementation does not use compression of the cleartext input to
-prevent repetitions, or other common security improvements. Use with care.
+if sys.version_info >= (3, 11):
+    from typing import Unpack
+else:
+    from typing_extensions import Unpack
 
-"""
+if sys.version_info >= (3, 13):
+    from typing import TypeVarTuple
+else:
+    from typing_extensions import TypeVarTuple
 
-from rsa.key import newkeys, PrivateKey, PublicKey
-from rsa.pkcs1 import (
-    encrypt,
-    decrypt,
-    sign,
-    verify,
-    DecryptionError,
-    VerificationError,
-    find_signature_hash,
-    sign_hash,
-    compute_hash,
-)
+_T = TypeVar("_T")
+_Ts = TypeVarTuple("_Ts", default=Unpack[tuple[()]])
 
-__author__ = "Sybren Stuvel, Barry Mead and Yesudeep Mangalapilly"
-__date__ = "2025-04-16"
-__version__ = "4.9.1"
+__version__ = "1.4.0"
 
-# Do doctest if we're run directly
-if __name__ == "__main__":
-    import doctest
+__all__ = ("Signal",)
 
-    doctest.testmod()
 
-__all__ = [
-    "newkeys",
-    "encrypt",
-    "decrypt",
-    "sign",
-    "verify",
-    "PublicKey",
-    "PrivateKey",
-    "DecryptionError",
-    "VerificationError",
-    "find_signature_hash",
-    "compute_hash",
-    "sign_hash",
-]
+class Signal(FrozenList[Callable[[Unpack[_Ts]], Awaitable[object]]]):
+    """Coroutine-based signal implementation.
+
+    To connect a callback to a signal, use any list method.
+
+    Signals are fired using the send() coroutine, which takes named
+    arguments.
+    """
+
+    __slots__ = ("_owner",)
+
+    def __init__(self, owner: object):
+        super().__init__()
+        self._owner = owner
+
+    def __repr__(self) -> str:
+        return "<Signal owner={}, frozen={}, {!r}>".format(
+            self._owner, self.frozen, list(self)
+        )
+
+    async def send(self, *args: Unpack[_Ts], **kwargs: Any) -> None:
+        """
+        Sends data to all registered receivers.
+        """
+        if not self.frozen:
+            raise RuntimeError("Cannot send non-frozen signal.")
+
+        for receiver in self:
+            await receiver(*args, **kwargs)
+
+    def __call__(
+        self, func: Callable[[Unpack[_Ts]], Awaitable[_T]]
+    ) -> Callable[[Unpack[_Ts]], Awaitable[_T]]:
+        """Decorator to add a function to this Signal."""
+        self.append(func)
+        return func
