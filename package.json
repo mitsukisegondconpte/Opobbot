@@ -1,24 +1,14 @@
 {
-    "name": "@types/http-errors",
-    "version": "2.0.5",
-    "description": "TypeScript definitions for http-errors",
-    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/http-errors",
+    "name": "@types/range-parser",
+    "version": "1.2.7",
+    "description": "TypeScript definitions for range-parser",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/range-parser",
     "license": "MIT",
     "contributors": [
         {
-            "name": "Tanguy Krotoff",
-            "githubUsername": "tkrotoff",
-            "url": "https://github.com/tkrotoff"
-        },
-        {
-            "name": "BendingBender",
-            "githubUsername": "BendingBender",
-            "url": "https://github.com/BendingBender"
-        },
-        {
-            "name": "Sebastian Beltran",
-            "githubUsername": "bjohansebas",
-            "url": "https://github.com/bjohansebas"
+            "name": "Tomek Łaziuk",
+            "githubUsername": "tlaziuk",
+            "url": "https://github.com/tlaziuk"
         }
     ],
     "main": "",
@@ -26,11 +16,10 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
-        "directory": "types/http-errors"
+        "directory": "types/range-parser"
     },
     "scripts": {},
     "dependencies": {},
-    "peerDependencies": {},
-    "typesPublisherContentHash": "621b9125a6493a2fa928b9150e335cb57429fb00e3bc0257426f1173903f7a4a",
-    "typeScriptVersion": "5.1"
+    "typesPublisherContentHash": "85ed88e3afe8da85360c400901b67e99a7c6690c6376c5ab8939ae9dee4b0a93",
+    "typeScriptVersion": "4.5"
 }
