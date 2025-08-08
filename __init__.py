@@ -1,14 +1,14 @@
-__version__ = "2.6.1"
+from ._query import Query, QueryVariable, SimpleQuery
+from ._url import URL, cache_clear, cache_configure, cache_info
 
-from .impl import start_connection
-from .types import AddrInfoType, SocketFactoryType
-from .utils import addr_to_addr_infos, pop_addr_infos_interleave, remove_addr_infos
+__version__ = "1.20.1"
 
 __all__ = (
-    "AddrInfoType",
-    "SocketFactoryType",
-    "addr_to_addr_infos",
-    "pop_addr_infos_interleave",
-    "remove_addr_infos",
-    "start_connection",
+    "URL",
+    "SimpleQuery",
+    "QueryVariable",
+    "Query",
+    "cache_clear",
+    "cache_configure",
+    "cache_info",
 )
