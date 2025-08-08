@@ -1,232 +1,123 @@
-Metadata-Version: 2.4
-Name: attrs
-Version: 25.3.0
-Summary: Classes Without Boilerplate
-Project-URL: Documentation, https://www.attrs.org/
-Project-URL: Changelog, https://www.attrs.org/en/stable/changelog.html
-Project-URL: GitHub, https://github.com/python-attrs/attrs
-Project-URL: Funding, https://github.com/sponsors/hynek
-Project-URL: Tidelift, https://tidelift.com/subscription/pkg/pypi-attrs?utm_source=pypi-attrs&utm_medium=pypi
-Author-email: Hynek Schlawack <hs@ox.cx>
-License-Expression: MIT
-License-File: LICENSE
-Keywords: attribute,boilerplate,class
+Metadata-Version: 2.3
+Name: aiohappyeyeballs
+Version: 2.6.1
+Summary: Happy Eyeballs for asyncio
+License: PSF-2.0
+Author: J. Nick Koston
+Author-email: nick@koston.org
+Requires-Python: >=3.9
 Classifier: Development Status :: 5 - Production/Stable
-Classifier: Programming Language :: Python :: 3.8
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
 Classifier: Programming Language :: Python :: 3.13
-Classifier: Programming Language :: Python :: Implementation :: CPython
-Classifier: Programming Language :: Python :: Implementation :: PyPy
-Classifier: Typing :: Typed
-Requires-Python: >=3.8
-Provides-Extra: benchmark
-Requires-Dist: cloudpickle; (platform_python_implementation == 'CPython') and extra == 'benchmark'
-Requires-Dist: hypothesis; extra == 'benchmark'
-Requires-Dist: mypy>=1.11.1; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'benchmark'
-Requires-Dist: pympler; extra == 'benchmark'
-Requires-Dist: pytest-codspeed; extra == 'benchmark'
-Requires-Dist: pytest-mypy-plugins; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'benchmark'
-Requires-Dist: pytest-xdist[psutil]; extra == 'benchmark'
-Requires-Dist: pytest>=4.3.0; extra == 'benchmark'
-Provides-Extra: cov
-Requires-Dist: cloudpickle; (platform_python_implementation == 'CPython') and extra == 'cov'
-Requires-Dist: coverage[toml]>=5.3; extra == 'cov'
-Requires-Dist: hypothesis; extra == 'cov'
-Requires-Dist: mypy>=1.11.1; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'cov'
-Requires-Dist: pympler; extra == 'cov'
-Requires-Dist: pytest-mypy-plugins; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'cov'
-Requires-Dist: pytest-xdist[psutil]; extra == 'cov'
-Requires-Dist: pytest>=4.3.0; extra == 'cov'
-Provides-Extra: dev
-Requires-Dist: cloudpickle; (platform_python_implementation == 'CPython') and extra == 'dev'
-Requires-Dist: hypothesis; extra == 'dev'
-Requires-Dist: mypy>=1.11.1; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'dev'
-Requires-Dist: pre-commit-uv; extra == 'dev'
-Requires-Dist: pympler; extra == 'dev'
-Requires-Dist: pytest-mypy-plugins; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'dev'
-Requires-Dist: pytest-xdist[psutil]; extra == 'dev'
-Requires-Dist: pytest>=4.3.0; extra == 'dev'
-Provides-Extra: docs
-Requires-Dist: cogapp; extra == 'docs'
-Requires-Dist: furo; extra == 'docs'
-Requires-Dist: myst-parser; extra == 'docs'
-Requires-Dist: sphinx; extra == 'docs'
-Requires-Dist: sphinx-notfound-page; extra == 'docs'
-Requires-Dist: sphinxcontrib-towncrier; extra == 'docs'
-Requires-Dist: towncrier; extra == 'docs'
-Provides-Extra: tests
-Requires-Dist: cloudpickle; (platform_python_implementation == 'CPython') and extra == 'tests'
-Requires-Dist: hypothesis; extra == 'tests'
-Requires-Dist: mypy>=1.11.1; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'tests'
-Requires-Dist: pympler; extra == 'tests'
-Requires-Dist: pytest-mypy-plugins; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'tests'
-Requires-Dist: pytest-xdist[psutil]; extra == 'tests'
-Requires-Dist: pytest>=4.3.0; extra == 'tests'
-Provides-Extra: tests-mypy
-Requires-Dist: mypy>=1.11.1; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'tests-mypy'
-Requires-Dist: pytest-mypy-plugins; (platform_python_implementation == 'CPython' and python_version >= '3.10') and extra == 'tests-mypy'
+Classifier: License :: OSI Approved :: Python Software Foundation License
+Project-URL: Bug Tracker, https://github.com/aio-libs/aiohappyeyeballs/issues
+Project-URL: Changelog, https://github.com/aio-libs/aiohappyeyeballs/blob/main/CHANGELOG.md
+Project-URL: Documentation, https://aiohappyeyeballs.readthedocs.io
+Project-URL: Repository, https://github.com/aio-libs/aiohappyeyeballs
 Description-Content-Type: text/markdown
 
+# aiohappyeyeballs
+
 <p align="center">
-  <a href="https://www.attrs.org/">
-    <img src="https://raw.githubusercontent.com/python-attrs/attrs/main/docs/_static/attrs_logo.svg" width="35%" alt="attrs" />
+  <a href="https://github.com/aio-libs/aiohappyeyeballs/actions/workflows/ci.yml?query=branch%3Amain">
+    <img src="https://img.shields.io/github/actions/workflow/status/aio-libs/aiohappyeyeballs/ci-cd.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status" >
+  </a>
+  <a href="https://aiohappyeyeballs.readthedocs.io">
+    <img src="https://img.shields.io/readthedocs/aiohappyeyeballs.svg?logo=read-the-docs&logoColor=fff&style=flat-square" alt="Documentation Status">
+  </a>
+  <a href="https://codecov.io/gh/aio-libs/aiohappyeyeballs">
+    <img src="https://img.shields.io/codecov/c/github/aio-libs/aiohappyeyeballs.svg?logo=codecov&logoColor=fff&style=flat-square" alt="Test coverage percentage">
   </a>
 </p>
-
-
-*attrs* is the Python package that will bring back the **joy** of **writing classes** by relieving you from the drudgery of implementing object protocols (aka [dunder methods](https://www.attrs.org/en/latest/glossary.html#term-dunder-methods)).
-[Trusted by NASA](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/personalizing-your-profile#list-of-qualifying-repositories-for-mars-2020-helicopter-contributor-achievement) for Mars missions since 2020!
-
-Its main goal is to help you to write **concise** and **correct** software without slowing down your code.
-
-
-## Sponsors
-
-*attrs* would not be possible without our [amazing sponsors](https://github.com/sponsors/hynek).
-Especially those generously supporting us at the *The Organization* tier and higher:
-
-<!-- sponsor-break-begin -->
-
 <p align="center">
-
-<!-- [[[cog
-import pathlib, tomllib
-
-for sponsor in tomllib.loads(pathlib.Path("pyproject.toml").read_text())["tool"]["sponcon"]["sponsors"]:
-      print(f'<a href="{sponsor["url"]}"><img title="{sponsor["title"]}" src="https://www.attrs.org/en/25.3.0/_static/sponsors/{sponsor["img"]}" width="190" /></a>')
-]]] -->
-<a href="https://www.variomedia.de/"><img title="Variomedia AG" src="https://www.attrs.org/en/25.3.0/_static/sponsors/Variomedia.svg" width="190" /></a>
-<a href="https://tidelift.com/?utm_source=lifter&utm_medium=referral&utm_campaign=hynek"><img title="Tidelift" src="https://www.attrs.org/en/25.3.0/_static/sponsors/Tidelift.svg" width="190" /></a>
-<a href="https://klaviyo.com/"><img title="Klaviyo" src="https://www.attrs.org/en/25.3.0/_static/sponsors/Klaviyo.svg" width="190" /></a>
-<a href="https://privacy-solutions.org/"><img title="Privacy Solutions" src="https://www.attrs.org/en/25.3.0/_static/sponsors/Privacy-Solutions.svg" width="190" /></a>
-<a href="https://www.emsys-renewables.com/"><img title="emsys renewables" src="https://www.attrs.org/en/25.3.0/_static/sponsors/emsys-renewables.svg" width="190" /></a>
-<a href="https://filepreviews.io/"><img title="FilePreviews" src="https://www.attrs.org/en/25.3.0/_static/sponsors/FilePreviews.svg" width="190" /></a>
-<a href="https://polar.sh/"><img title="Polar" src="https://www.attrs.org/en/25.3.0/_static/sponsors/Polar.svg" width="190" /></a>
-<!-- [[[end]]] -->
-
+  <a href="https://python-poetry.org/">
+    <img src="https://img.shields.io/badge/packaging-poetry-299bd7?style=flat-square&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAASCAYAAABrXO8xAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgBfZLPa1NBEMe/s7tNXoxW1KJQKaUHkXhQvHgW6UHQQ09CBS/6V3hKc/AP8CqCrUcpmop3Cx48eDB4yEECjVQrlZb80CRN8t6OM/teagVxYZi38+Yz853dJbzoMV3MM8cJUcLMSUKIE8AzQ2PieZzFxEJOHMOgMQQ+dUgSAckNXhapU/NMhDSWLs1B24A8sO1xrN4NECkcAC9ASkiIJc6k5TRiUDPhnyMMdhKc+Zx19l6SgyeW76BEONY9exVQMzKExGKwwPsCzza7KGSSWRWEQhyEaDXp6ZHEr416ygbiKYOd7TEWvvcQIeusHYMJGhTwF9y7sGnSwaWyFAiyoxzqW0PM/RjghPxF2pWReAowTEXnDh0xgcLs8l2YQmOrj3N7ByiqEoH0cARs4u78WgAVkoEDIDoOi3AkcLOHU60RIg5wC4ZuTC7FaHKQm8Hq1fQuSOBvX/sodmNJSB5geaF5CPIkUeecdMxieoRO5jz9bheL6/tXjrwCyX/UYBUcjCaWHljx1xiX6z9xEjkYAzbGVnB8pvLmyXm9ep+W8CmsSHQQY77Zx1zboxAV0w7ybMhQmfqdmmw3nEp1I0Z+FGO6M8LZdoyZnuzzBdjISicKRnpxzI9fPb+0oYXsNdyi+d3h9bm9MWYHFtPeIZfLwzmFDKy1ai3p+PDls1Llz4yyFpferxjnyjJDSEy9CaCx5m2cJPerq6Xm34eTrZt3PqxYO1XOwDYZrFlH1fWnpU38Y9HRze3lj0vOujZcXKuuXm3jP+s3KbZVra7y2EAAAAAASUVORK5CYII=" alt="Poetry">
+  </a>
+  <a href="https://github.com/astral-sh/ruff">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
+  </a>
+  <a href="https://github.com/pre-commit/pre-commit">
+    <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat-square" alt="pre-commit">
+  </a>
 </p>
-
-<!-- sponsor-break-end -->
-
 <p align="center">
-   <strong>Please consider <a href="https://github.com/sponsors/hynek">joining them</a> to help make <em>attrs</em>’s maintenance more sustainable!</strong>
+  <a href="https://pypi.org/project/aiohappyeyeballs/">
+    <img src="https://img.shields.io/pypi/v/aiohappyeyeballs.svg?logo=python&logoColor=fff&style=flat-square" alt="PyPI Version">
+  </a>
+  <img src="https://img.shields.io/pypi/pyversions/aiohappyeyeballs.svg?style=flat-square&logo=python&amp;logoColor=fff" alt="Supported Python versions">
+  <img src="https://img.shields.io/pypi/l/aiohappyeyeballs.svg?style=flat-square" alt="License">
 </p>
-
-<!-- teaser-end -->
-
-## Example
-
-*attrs* gives you a class decorator and a way to declaratively define the attributes on that class:
-
-<!-- code-begin -->
-
-```pycon
->>> from attrs import asdict, define, make_class, Factory
-
->>> @define
-... class SomeClass:
-...     a_number: int = 42
-...     list_of_numbers: list[int] = Factory(list)
-...
-...     def hard_math(self, another_number):
-...         return self.a_number + sum(self.list_of_numbers) * another_number
-
-
->>> sc = SomeClass(1, [1, 2, 3])
->>> sc
-SomeClass(a_number=1, list_of_numbers=[1, 2, 3])
-
->>> sc.hard_math(3)
-19
->>> sc == SomeClass(1, [1, 2, 3])
-True
->>> sc != SomeClass(2, [3, 2, 1])
-True
-
->>> asdict(sc)
-{'a_number': 1, 'list_of_numbers': [1, 2, 3]}
-
->>> SomeClass()
-SomeClass(a_number=42, list_of_numbers=[])
-
->>> C = make_class("C", ["a", "b"])
->>> C("foo", "bar")
-C(a='foo', b='bar')
-```
-
-After *declaring* your attributes, *attrs* gives you:
-
-- a concise and explicit overview of the class's attributes,
-- a nice human-readable `__repr__`,
-- equality-checking methods,
-- an initializer,
-- and much more,
-
-*without* writing dull boilerplate code again and again and *without* runtime performance penalties.
 
 ---
 
-This example uses *attrs*'s modern APIs that have been introduced in version 20.1.0, and the *attrs* package import name that has been added in version 21.3.0.
-The classic APIs (`@attr.s`, `attr.ib`, plus their serious-business aliases) and the `attr` package import name will remain **indefinitely**.
+**Documentation**: <a href="https://aiohappyeyeballs.readthedocs.io" target="_blank">https://aiohappyeyeballs.readthedocs.io </a>
 
-Check out [*On The Core API Names*](https://www.attrs.org/en/latest/names.html) for an in-depth explanation!
+**Source Code**: <a href="https://github.com/aio-libs/aiohappyeyeballs" target="_blank">https://github.com/aio-libs/aiohappyeyeballs </a>
 
+---
 
-### Hate Type Annotations!?
+[Happy Eyeballs](https://en.wikipedia.org/wiki/Happy_Eyeballs)
+([RFC 8305](https://www.rfc-editor.org/rfc/rfc8305.html))
 
-No problem!
-Types are entirely **optional** with *attrs*.
-Simply assign `attrs.field()` to the attributes instead of annotating them with types:
+## Use case
+
+This library exists to allow connecting with
+[Happy Eyeballs](https://en.wikipedia.org/wiki/Happy_Eyeballs)
+([RFC 8305](https://www.rfc-editor.org/rfc/rfc8305.html))
+when you
+already have a list of addrinfo and not a DNS name.
+
+The stdlib version of `loop.create_connection()`
+will only work when you pass in an unresolved name which
+is not a good fit when using DNS caching or resolving
+names via another method such as `zeroconf`.
+
+## Installation
+
+Install this via pip (or your favourite package manager):
+
+`pip install aiohappyeyeballs`
+
+## License
+
+[aiohappyeyeballs is licensed under the same terms as cpython itself.](https://github.com/python/cpython/blob/main/LICENSE)
+
+## Example usage
 
 ```python
-from attrs import define, field
 
-@define
-class SomeClass:
-    a_number = field(default=42)
-    list_of_numbers = field(factory=list)
+addr_infos = await loop.getaddrinfo("example.org", 80)
+
+socket = await start_connection(addr_infos)
+socket = await start_connection(addr_infos, local_addr_infos=local_addr_infos, happy_eyeballs_delay=0.2)
+
+transport, protocol = await loop.create_connection(
+    MyProtocol, sock=socket, ...)
+
+# Remove the first address for each family from addr_info
+pop_addr_infos_interleave(addr_info, 1)
+
+# Remove all matching address from addr_info
+remove_addr_infos(addr_info, "dead::beef::")
+
+# Convert a local_addr to local_addr_infos
+local_addr_infos = addr_to_addr_infos(("127.0.0.1",0))
 ```
 
+## Credits
 
-## Data Classes
+This package contains code from cpython and is licensed under the same terms as cpython itself.
 
-On the tin, *attrs* might remind you of `dataclasses` (and indeed, `dataclasses` [are a descendant](https://hynek.me/articles/import-attrs/) of *attrs*).
-In practice it does a lot more and is more flexible.
-For instance, it allows you to define [special handling of NumPy arrays for equality checks](https://www.attrs.org/en/stable/comparison.html#customization), allows more ways to [plug into the initialization process](https://www.attrs.org/en/stable/init.html#hooking-yourself-into-initialization), has a replacement for `__init_subclass__`, and allows for stepping through the generated methods using a debugger.
+This package was created with
+[Copier](https://copier.readthedocs.io/) and the
+[browniebroke/pypackage-template](https://github.com/browniebroke/pypackage-template)
+project template.
 
-For more details, please refer to our [comparison page](https://www.attrs.org/en/stable/why.html#data-classes), but generally speaking, we are more likely to commit crimes against nature to make things work that one would expect to work, but that are quite complicated in practice.
-
-
-## Project Information
-
-- [**Changelog**](https://www.attrs.org/en/stable/changelog.html)
-- [**Documentation**](https://www.attrs.org/)
-- [**PyPI**](https://pypi.org/project/attrs/)
-- [**Source Code**](https://github.com/python-attrs/attrs)
-- [**Contributing**](https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md)
-- [**Third-party Extensions**](https://github.com/python-attrs/attrs/wiki/Extensions-to-attrs)
-- **Get Help**: use the `python-attrs` tag on [Stack Overflow](https://stackoverflow.com/questions/tagged/python-attrs)
-
-
-### *attrs* for Enterprise
-
-Available as part of the [Tidelift Subscription](https://tidelift.com/?utm_source=lifter&utm_medium=referral&utm_campaign=hynek).
-
-The maintainers of *attrs* and thousands of other packages are working with Tidelift to deliver commercial support and maintenance for the open source packages you use to build your applications.
-Save time, reduce risk, and improve code health, while paying the maintainers of the exact packages you use.
-
-## Release Information
-
-### Changes
-
-- Restore support for generator-based `field_transformer`s.
-  [#1417](https://github.com/python-attrs/attrs/issues/1417)
-
-
-
----
-
-[Full changelog →](https://www.attrs.org/en/stable/changelog.html)
