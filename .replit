@@ -1,0 +1,44 @@
+modules = ["nodejs-20", "python-3.11"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["zip"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "WhatsApp Bot"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "whatsapp_bot_startup"
+
+[[workflows.workflow]]
+name = "WhatsApp Bot"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install && npm install @whiskeysockets/baileys qrcode-terminal axios express && pip install telethon aiohttp && node index.js"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "whatsapp_bot_startup"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x start.sh && ./start.sh"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
