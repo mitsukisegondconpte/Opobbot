@@ -1,95 +1,122 @@
-/// <reference types="node" />
+/* =================== USAGE ===================
 
-import { NextHandleFunction } from "connect";
-import * as http from "http";
+    import express = require("express");
+    var app = express();
 
-// for docs go to https://github.com/expressjs/body-parser/tree/1.19.0#body-parser
+ =============================================== */
 
-declare namespace bodyParser {
-    interface BodyParser {
+/// <reference types="express-serve-static-core" />
+/// <reference types="serve-static" />
+
+import * as bodyParser from "body-parser";
+import * as core from "express-serve-static-core";
+import * as serveStatic from "serve-static";
+
+/**
+ * Creates an Express application. The express() function is a top-level function exported by the express module.
+ */
+declare function e(): core.Express;
+
+declare namespace e {
+    /**
+     * This is a built-in middleware function in Express. It parses incoming requests with JSON payloads and is based on body-parser.
+     * @since 4.16.0
+     */
+    var json: typeof bodyParser.json;
+
+    /**
+     * This is a built-in middleware function in Express. It parses incoming requests with Buffer payloads and is based on body-parser.
+     * @since 4.17.0
+     */
+    var raw: typeof bodyParser.raw;
+
+    /**
+     * This is a built-in middleware function in Express. It parses incoming requests with text payloads and is based on body-parser.
+     * @since 4.17.0
+     */
+    var text: typeof bodyParser.text;
+
+    /**
+     * These are the exposed prototypes.
+     */
+    var application: Application;
+    var request: Request;
+    var response: Response;
+
+    /**
+     * This is a built-in middleware function in Express. It serves static files and is based on serve-static.
+     */
+    var static: serveStatic.RequestHandlerConstructor<Response>;
+
+    /**
+     * This is a built-in middleware function in Express. It parses incoming requests with urlencoded payloads and is based on body-parser.
+     * @since 4.16.0
+     */
+    var urlencoded: typeof bodyParser.urlencoded;
+
+    export function Router(options?: RouterOptions): core.Router;
+
+    interface RouterOptions {
         /**
-         * @deprecated  use individual json/urlencoded middlewares
+         * Enable case sensitivity.
          */
-        (options?: OptionsJson & OptionsText & OptionsUrlencoded): NextHandleFunction;
-        /**
-         * Returns middleware that only parses json and only looks at requests
-         * where the Content-Type header matches the type option.
-         */
-        json(options?: OptionsJson): NextHandleFunction;
-        /**
-         * Returns middleware that parses all bodies as a Buffer and only looks at requests
-         * where the Content-Type header matches the type option.
-         */
-        raw(options?: Options): NextHandleFunction;
+        caseSensitive?: boolean | undefined;
 
         /**
-         * Returns middleware that parses all bodies as a string and only looks at requests
-         * where the Content-Type header matches the type option.
+         * Preserve the req.params values from the parent router.
+         * If the parent and the child have conflicting param names, the child’s value take precedence.
+         *
+         * @default false
+         * @since 4.5.0
          */
-        text(options?: OptionsText): NextHandleFunction;
-        /**
-         * Returns middleware that only parses urlencoded bodies and only looks at requests
-         * where the Content-Type header matches the type option
-         */
-        urlencoded(options?: OptionsUrlencoded): NextHandleFunction;
-    }
+        mergeParams?: boolean | undefined;
 
-    interface Options {
-        /** When set to true, then deflated (compressed) bodies will be inflated; when false, deflated bodies are rejected. Defaults to true. */
-        inflate?: boolean | undefined;
         /**
-         * Controls the maximum request body size. If this is a number,
-         * then the value specifies the number of bytes; if it is a string,
-         * the value is passed to the bytes library for parsing. Defaults to '100kb'.
-         */
-        limit?: number | string | undefined;
-        /**
-         * The type option is used to determine what media type the middleware will parse
-         */
-        type?: string | string[] | ((req: http.IncomingMessage) => any) | undefined;
-        /**
-         * The verify option, if supplied, is called as verify(req, res, buf, encoding),
-         * where buf is a Buffer of the raw request body and encoding is the encoding of the request.
-         */
-        verify?(req: http.IncomingMessage, res: http.ServerResponse, buf: Buffer, encoding: string): void;
-    }
-
-    interface OptionsJson extends Options {
-        /**
-         * The reviver option is passed directly to JSON.parse as the second argument.
-         */
-        reviver?(key: string, value: any): any;
-        /**
-         * When set to `true`, will only accept arrays and objects;
-         * when `false` will accept anything JSON.parse accepts. Defaults to `true`.
+         * Enable strict routing.
          */
         strict?: boolean | undefined;
     }
 
-    interface OptionsText extends Options {
-        /**
-         * Specify the default character set for the text content if the charset
-         * is not specified in the Content-Type header of the request.
-         * Defaults to `utf-8`.
-         */
-        defaultCharset?: string | undefined;
-    }
-
-    interface OptionsUrlencoded extends Options {
-        /**
-         * The extended option allows to choose between parsing the URL-encoded data
-         * with the querystring library (when `false`) or the qs library (when `true`).
-         */
-        extended?: boolean | undefined;
-        /**
-         * The parameterLimit option controls the maximum number of parameters
-         * that are allowed in the URL-encoded data. If a request contains more parameters than this value,
-         * a 413 will be returned to the client. Defaults to 1000.
-         */
-        parameterLimit?: number | undefined;
-    }
+    interface Application extends core.Application {}
+    interface CookieOptions extends core.CookieOptions {}
+    interface Errback extends core.Errback {}
+    interface ErrorRequestHandler<
+        P = core.ParamsDictionary,
+        ResBody = any,
+        ReqBody = any,
+        ReqQuery = core.Query,
+        Locals extends Record<string, any> = Record<string, any>,
+    > extends core.ErrorRequestHandler<P, ResBody, ReqBody, ReqQuery, Locals> {}
+    interface Express extends core.Express {}
+    interface Handler extends core.Handler {}
+    interface IRoute extends core.IRoute {}
+    interface IRouter extends core.IRouter {}
+    interface IRouterHandler<T> extends core.IRouterHandler<T> {}
+    interface IRouterMatcher<T> extends core.IRouterMatcher<T> {}
+    interface MediaType extends core.MediaType {}
+    interface NextFunction extends core.NextFunction {}
+    interface Locals extends core.Locals {}
+    interface Request<
+        P = core.ParamsDictionary,
+        ResBody = any,
+        ReqBody = any,
+        ReqQuery = core.Query,
+        Locals extends Record<string, any> = Record<string, any>,
+    > extends core.Request<P, ResBody, ReqBody, ReqQuery, Locals> {}
+    interface RequestHandler<
+        P = core.ParamsDictionary,
+        ResBody = any,
+        ReqBody = any,
+        ReqQuery = core.Query,
+        Locals extends Record<string, any> = Record<string, any>,
+    > extends core.RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals> {}
+    interface RequestParamHandler extends core.RequestParamHandler {}
+    interface Response<
+        ResBody = any,
+        Locals extends Record<string, any> = Record<string, any>,
+    > extends core.Response<ResBody, Locals> {}
+    interface Router extends core.Router {}
+    interface Send extends core.Send {}
 }
 
-declare const bodyParser: bodyParser.BodyParser;
-
-export = bodyParser;
+export = e;
