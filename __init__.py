@@ -1,32 +1,59 @@
-"""propcache: An accelerated property cache for Python classes."""
+"""Multidict implementation.
+
+HTTP Headers and URL query string require specific data structure:
+multidict. It behaves mostly like a dict but it can have
+several values for the same key.
+"""
 
 from typing import TYPE_CHECKING
 
-_PUBLIC_API = ("cached_property", "under_cached_property")
+from ._abc import MultiMapping, MutableMultiMapping
+from ._compat import USE_EXTENSIONS
 
-__version__ = "0.3.2"
-__all__ = ()
+__all__ = (
+    "MultiMapping",
+    "MutableMultiMapping",
+    "MultiDictProxy",
+    "CIMultiDictProxy",
+    "MultiDict",
+    "CIMultiDict",
+    "upstr",
+    "istr",
+    "getversion",
+)
 
-# Imports have moved to `propcache.api` in 0.2.0+.
-# This module is now a facade for the API.
-if TYPE_CHECKING:
-    from .api import cached_property as cached_property  # noqa: F401
-    from .api import under_cached_property as under_cached_property  # noqa: F401
-
-
-def _import_facade(attr: str) -> object:
-    """Import the public API from the `api` module."""
-    if attr in _PUBLIC_API:
-        from . import api  # pylint: disable=import-outside-toplevel
-
-        return getattr(api, attr)
-    raise AttributeError(f"module '{__package__}' has no attribute '{attr}'")
+__version__ = "6.6.3"
 
 
-def _dir_facade() -> list[str]:
-    """Include the public API in the module's dir() output."""
-    return [*_PUBLIC_API, *globals().keys()]
+if TYPE_CHECKING or not USE_EXTENSIONS:
+    from ._multidict_py import (
+        CIMultiDict,
+        CIMultiDictProxy,
+        MultiDict,
+        MultiDictProxy,
+        getversion,
+        istr,
+    )
+else:
+    from collections.abc import ItemsView, KeysView, ValuesView
+
+    from ._multidict import (
+        CIMultiDict,
+        CIMultiDictProxy,
+        MultiDict,
+        MultiDictProxy,
+        _ItemsView,
+        _KeysView,
+        _ValuesView,
+        getversion,
+        istr,
+    )
+
+    MultiMapping.register(MultiDictProxy)
+    MutableMultiMapping.register(MultiDict)
+    KeysView.register(_KeysView)
+    ItemsView.register(_ItemsView)
+    ValuesView.register(_ValuesView)
 
 
-__getattr__ = _import_facade
-__dir__ = _dir_facade
+upstr = istr
