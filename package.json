@@ -1,14 +1,24 @@
 {
-    "name": "@types/qrcode-terminal",
-    "version": "0.12.2",
-    "description": "TypeScript definitions for qrcode-terminal",
-    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/qrcode-terminal",
+    "name": "@types/http-errors",
+    "version": "2.0.5",
+    "description": "TypeScript definitions for http-errors",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/http-errors",
     "license": "MIT",
     "contributors": [
         {
-            "name": "Benjamin Altpeter",
-            "githubUsername": "baltpeter",
-            "url": "https://github.com/baltpeter"
+            "name": "Tanguy Krotoff",
+            "githubUsername": "tkrotoff",
+            "url": "https://github.com/tkrotoff"
+        },
+        {
+            "name": "BendingBender",
+            "githubUsername": "BendingBender",
+            "url": "https://github.com/BendingBender"
+        },
+        {
+            "name": "Sebastian Beltran",
+            "githubUsername": "bjohansebas",
+            "url": "https://github.com/bjohansebas"
         }
     ],
     "main": "",
@@ -16,10 +26,11 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
-        "directory": "types/qrcode-terminal"
+        "directory": "types/http-errors"
     },
     "scripts": {},
     "dependencies": {},
-    "typesPublisherContentHash": "725ad49d94a334da673d4a2548ab5a9e506a29fb28402eb223d1c56968d17d71",
-    "typeScriptVersion": "4.5"
+    "peerDependencies": {},
+    "typesPublisherContentHash": "621b9125a6493a2fa928b9150e335cb57429fb00e3bc0257426f1173903f7a4a",
+    "typeScriptVersion": "5.1"
 }
