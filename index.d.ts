@@ -1,82 +1,91 @@
-export = QueryString;
-export as namespace qs;
+/// <reference types="node" />
 
-declare namespace QueryString {
-    type defaultEncoder = (str: any, defaultEncoder?: any, charset?: string) => string;
-    type defaultDecoder = (str: string, decoder?: any, charset?: string) => string;
+import * as http from "http";
 
-    type BooleanOptional = boolean | undefined;
+/**
+ * Create a new connect server.
+ */
+declare function createServer(): createServer.Server;
 
-    interface IStringifyBaseOptions {
-        delimiter?: string | undefined;
-        strictNullHandling?: boolean | undefined;
-        skipNulls?: boolean | undefined;
-        encode?: boolean | undefined;
-        encoder?:
-            | ((str: any, defaultEncoder: defaultEncoder, charset: string, type: "key" | "value") => string)
-            | undefined;
-        filter?: Array<string | number> | ((prefix: string, value: any) => any) | undefined;
-        arrayFormat?: "indices" | "brackets" | "repeat" | "comma" | undefined;
-        indices?: boolean | undefined;
-        sort?: ((a: string, b: string) => number) | undefined;
-        serializeDate?: ((d: Date) => string) | undefined;
-        format?: "RFC1738" | "RFC3986" | undefined;
-        encodeValuesOnly?: boolean | undefined;
-        addQueryPrefix?: boolean | undefined;
-        charset?: "utf-8" | "iso-8859-1" | undefined;
-        charsetSentinel?: boolean | undefined;
-        allowEmptyArrays?: boolean | undefined;
-        commaRoundTrip?: boolean | undefined;
+declare namespace createServer {
+    export type ServerHandle = HandleFunction | http.Server;
+
+    export class IncomingMessage extends http.IncomingMessage {
+        originalUrl?: http.IncomingMessage["url"] | undefined;
     }
 
-    type IStringifyDynamicOptions<AllowDots extends BooleanOptional> = AllowDots extends true
-        ? { allowDots?: AllowDots; encodeDotInKeys?: boolean }
-        : { allowDots?: boolean; encodeDotInKeys?: false };
+    type NextFunction = (err?: any) => void;
 
-    type IStringifyOptions<AllowDots extends BooleanOptional = undefined> =
-        & IStringifyBaseOptions
-        & IStringifyDynamicOptions<AllowDots>;
+    export type SimpleHandleFunction = (req: IncomingMessage, res: http.ServerResponse) => void;
+    export type NextHandleFunction = (req: IncomingMessage, res: http.ServerResponse, next: NextFunction) => void;
+    export type ErrorHandleFunction = (
+        err: any,
+        req: IncomingMessage,
+        res: http.ServerResponse,
+        next: NextFunction,
+    ) => void;
+    export type HandleFunction = SimpleHandleFunction | NextHandleFunction | ErrorHandleFunction;
 
-    interface IParseBaseOptions {
-        comma?: boolean | undefined;
-        delimiter?: string | RegExp | undefined;
-        depth?: number | false | undefined;
-        decoder?:
-            | ((str: string, defaultDecoder: defaultDecoder, charset: string, type: "key" | "value") => any)
-            | undefined;
-        arrayLimit?: number | undefined;
-        parseArrays?: boolean | undefined;
-        plainObjects?: boolean | undefined;
-        allowPrototypes?: boolean | undefined;
-        allowSparse?: boolean | undefined;
-        parameterLimit?: number | undefined;
-        strictNullHandling?: boolean | undefined;
-        ignoreQueryPrefix?: boolean | undefined;
-        charset?: "utf-8" | "iso-8859-1" | undefined;
-        charsetSentinel?: boolean | undefined;
-        interpretNumericEntities?: boolean | undefined;
-        allowEmptyArrays?: boolean | undefined;
-        duplicates?: "combine" | "first" | "last" | undefined;
-        strictDepth?: boolean | undefined;
-        throwOnLimitExceeded?: boolean | undefined;
+    export interface ServerStackItem {
+        route: string;
+        handle: ServerHandle;
     }
 
-    type IParseDynamicOptions<AllowDots extends BooleanOptional> = AllowDots extends true
-        ? { allowDots?: AllowDots; decodeDotInKeys?: boolean }
-        : { allowDots?: boolean; decodeDotInKeys?: false };
+    export interface Server extends NodeJS.EventEmitter {
+        (req: http.IncomingMessage, res: http.ServerResponse, next?: Function): void;
 
-    type IParseOptions<AllowDots extends BooleanOptional = undefined> =
-        & IParseBaseOptions
-        & IParseDynamicOptions<AllowDots>;
+        route: string;
+        stack: ServerStackItem[];
 
-    interface ParsedQs {
-        [key: string]: undefined | string | ParsedQs | (string | ParsedQs)[];
+        /**
+         * Utilize the given middleware `handle` to the given `route`,
+         * defaulting to _/_. This "route" is the mount-point for the
+         * middleware, when given a value other than _/_ the middleware
+         * is only effective when that segment is present in the request's
+         * pathname.
+         *
+         * For example if we were to mount a function at _/admin_, it would
+         * be invoked on _/admin_, and _/admin/settings_, however it would
+         * not be invoked for _/_, or _/posts_.
+         */
+        use(fn: NextHandleFunction): Server;
+        use(fn: HandleFunction): Server;
+        use(route: string, fn: NextHandleFunction): Server;
+        use(route: string, fn: HandleFunction): Server;
+
+        /**
+         * Handle server requests, punting them down
+         * the middleware stack.
+         */
+        handle(req: http.IncomingMessage, res: http.ServerResponse, next: Function): void;
+
+        /**
+         * Listen for connections.
+         *
+         * This method takes the same arguments
+         * as node's `http.Server#listen()`.
+         *
+         * HTTP and HTTPS:
+         *
+         * If you run your application both as HTTP
+         * and HTTPS you may wrap them individually,
+         * since your Connect "server" is really just
+         * a JavaScript `Function`.
+         *
+         *      var connect = require('connect')
+         *        , http = require('http')
+         *        , https = require('https');
+         *
+         *      var app = connect();
+         *
+         *      http.createServer(app).listen(80);
+         *      https.createServer(options, app).listen(443);
+         */
+        listen(port: number, hostname?: string, backlog?: number, callback?: Function): http.Server;
+        listen(port: number, hostname?: string, callback?: Function): http.Server;
+        listen(path: string, callback?: Function): http.Server;
+        listen(handle: any, listeningListener?: Function): http.Server;
     }
-
-    function stringify(obj: any, options?: IStringifyOptions<BooleanOptional>): string;
-    function parse(str: string, options?: IParseOptions<BooleanOptional> & { decoder?: never | undefined }): ParsedQs;
-    function parse(
-        str: string | Record<string, string>,
-        options?: IParseOptions<BooleanOptional>,
-    ): { [key: string]: unknown };
 }
+
+export = createServer;
