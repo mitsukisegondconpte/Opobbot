@@ -1,53 +1,15 @@
 # Installation
-> `npm install --save @types/range-parser`
+> `npm install --save @types/qs`
 
 # Summary
-This package contains type definitions for range-parser (https://github.com/jshttp/range-parser).
+This package contains type definitions for qs (https://github.com/ljharb/qs).
 
 # Details
-Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/range-parser.
-## [index.d.ts](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/range-parser/index.d.ts)
-````ts
-/**
- * When ranges are returned, the array has a "type" property which is the type of
- * range that is required (most commonly, "bytes"). Each array element is an object
- * with a "start" and "end" property for the portion of the range.
- *
- * @returns `-1` when unsatisfiable and `-2` when syntactically invalid, ranges otherwise.
- */
-declare function RangeParser(
-    size: number,
-    str: string,
-    options?: RangeParser.Options,
-): RangeParser.Result | RangeParser.Ranges;
-
-declare namespace RangeParser {
-    interface Ranges extends Array<Range> {
-        type: string;
-    }
-    interface Range {
-        start: number;
-        end: number;
-    }
-    interface Options {
-        /**
-         * The "combine" option can be set to `true` and overlapping & adjacent ranges
-         * will be combined into a single range.
-         */
-        combine?: boolean | undefined;
-    }
-    type ResultUnsatisfiable = -1;
-    type ResultInvalid = -2;
-    type Result = ResultUnsatisfiable | ResultInvalid;
-}
-
-export = RangeParser;
-
-````
+Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/qs.
 
 ### Additional Details
- * Last updated: Tue, 07 Nov 2023 09:09:39 GMT
+ * Last updated: Sat, 17 May 2025 04:36:54 GMT
  * Dependencies: none
 
 # Credits
-These definitions were written by [Tomek Łaziuk](https://github.com/tlaziuk).
+These definitions were written by [Roman Korneev](https://github.com/RWander), [Leon Yu](https://github.com/leonyu), [Belinda Teh](https://github.com/tehbelinda), [Melvin Lee](https://github.com/zyml), [Arturs Vonda](https://github.com/artursvonda), [Carlos Bonetti](https://github.com/CarlosBonetti), [Dan Smith](https://github.com/dpsmith3), [Hunter Perrin](https://github.com/hperrin), and [Jordan Harband](https://github.com/ljharb).
