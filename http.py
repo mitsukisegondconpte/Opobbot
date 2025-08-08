@@ -1,39 +1,72 @@
-import asyncio
+import sys
+from http import HTTPStatus
+from typing import Mapping, Tuple
 
-from .connection import Connection, PacketCodec
+from . import __version__
+from .http_exceptions import HttpProcessingError as HttpProcessingError
+from .http_parser import (
+    HeadersParser as HeadersParser,
+    HttpParser as HttpParser,
+    HttpRequestParser as HttpRequestParser,
+    HttpResponseParser as HttpResponseParser,
+    RawRequestMessage as RawRequestMessage,
+    RawResponseMessage as RawResponseMessage,
+)
+from .http_websocket import (
+    WS_CLOSED_MESSAGE as WS_CLOSED_MESSAGE,
+    WS_CLOSING_MESSAGE as WS_CLOSING_MESSAGE,
+    WS_KEY as WS_KEY,
+    WebSocketError as WebSocketError,
+    WebSocketReader as WebSocketReader,
+    WebSocketWriter as WebSocketWriter,
+    WSCloseCode as WSCloseCode,
+    WSMessage as WSMessage,
+    WSMsgType as WSMsgType,
+    ws_ext_gen as ws_ext_gen,
+    ws_ext_parse as ws_ext_parse,
+)
+from .http_writer import (
+    HttpVersion as HttpVersion,
+    HttpVersion10 as HttpVersion10,
+    HttpVersion11 as HttpVersion11,
+    StreamWriter as StreamWriter,
+)
+
+__all__ = (
+    "HttpProcessingError",
+    "RESPONSES",
+    "SERVER_SOFTWARE",
+    # .http_writer
+    "StreamWriter",
+    "HttpVersion",
+    "HttpVersion10",
+    "HttpVersion11",
+    # .http_parser
+    "HeadersParser",
+    "HttpParser",
+    "HttpRequestParser",
+    "HttpResponseParser",
+    "RawRequestMessage",
+    "RawResponseMessage",
+    # .http_websocket
+    "WS_CLOSED_MESSAGE",
+    "WS_CLOSING_MESSAGE",
+    "WS_KEY",
+    "WebSocketReader",
+    "WebSocketWriter",
+    "ws_ext_gen",
+    "ws_ext_parse",
+    "WSMessage",
+    "WebSocketError",
+    "WSMsgType",
+    "WSCloseCode",
+)
 
 
-SSL_PORT = 443
+SERVER_SOFTWARE: str = "Python/{0[0]}.{0[1]} aiohttp/{1}".format(
+    sys.version_info, __version__
+)
 
-
-class HttpPacketCodec(PacketCodec):
-    tag = None
-    obfuscate_tag = None
-
-    def encode_packet(self, data):
-        return ('POST /api HTTP/1.1\r\n'
-                'Host: {}:{}\r\n'
-                'Content-Type: application/x-www-form-urlencoded\r\n'
-                'Connection: keep-alive\r\n'
-                'Keep-Alive: timeout=100000, max=10000000\r\n'
-                'Content-Length: {}\r\n\r\n'
-                .format(self._conn._ip, self._conn._port, len(data))
-                .encode('ascii') + data)
-
-    async def read_packet(self, reader):
-        while True:
-            line = await reader.readline()
-            if not line or line[-1] != b'\n':
-                raise asyncio.IncompleteReadError(line, None)
-
-            if line.lower().startswith(b'content-length: '):
-                await reader.readexactly(2)
-                length = int(line[16:-2])
-                return await reader.readexactly(length)
-
-
-class ConnectionHttp(Connection):
-    packet_codec = HttpPacketCodec
-
-    async def connect(self, timeout=None, ssl=None):
-        await super().connect(timeout=timeout, ssl=self._port == SSL_PORT)
+RESPONSES: Mapping[int, Tuple[str, str]] = {
+    v: (v.phrase, v.description) for v in HTTPStatus.__members__.values()
+}
