@@ -1,15 +1,22 @@
 # Installation
-> `npm install --save @types/send`
+> `npm install --save @types/qrcode-terminal`
 
 # Summary
-This package contains type definitions for send (https://github.com/pillarjs/send).
+This package contains type definitions for qrcode-terminal (https://github.com/gtanner/qrcode-terminal).
 
 # Details
-Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/send.
+Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/qrcode-terminal.
+## [index.d.ts](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/qrcode-terminal/index.d.ts)
+````ts
+export const error: 0 | 1 | 2 | 3;
+export function generate(input: string, opts?: { small: boolean }, callback?: (qrcode: string) => void): void;
+export function setErrorLevel(error: "L" | "M" | "Q" | "H"): void;
+
+````
 
 ### Additional Details
- * Last updated: Sat, 07 Jun 2025 02:15:25 GMT
- * Dependencies: [@types/mime](https://npmjs.com/package/@types/mime), [@types/node](https://npmjs.com/package/@types/node)
+ * Last updated: Tue, 07 Nov 2023 09:09:39 GMT
+ * Dependencies: none
 
 # Credits
-These definitions were written by [Mike Jerred](https://github.com/MikeJerred), [Piotr Błażejewicz](https://github.com/peterblazejewicz), and [Sebastian Beltran](https://github.com/bjohansebas).
+These definitions were written by [Benjamin Altpeter](https://github.com/baltpeter).
