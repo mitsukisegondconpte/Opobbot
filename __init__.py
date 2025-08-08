@@ -1,86 +1,104 @@
-import os
-import types
-from collections.abc import MutableSequence
-from functools import total_ordering
+# SPDX-License-Identifier: MIT
 
-__version__ = "1.7.0"
+"""
+Classes Without Boilerplate
+"""
 
-__all__ = ("FrozenList", "PyFrozenList")  # type: Tuple[str, ...]
+from functools import partial
+from typing import Callable, Literal, Protocol
 
-
-NO_EXTENSIONS = bool(os.environ.get("FROZENLIST_NO_EXTENSIONS"))  # type: bool
-
-
-@total_ordering
-class FrozenList(MutableSequence):
-    __slots__ = ("_frozen", "_items")
-    __class_getitem__ = classmethod(types.GenericAlias)
-
-    def __init__(self, items=None):
-        self._frozen = False
-        if items is not None:
-            items = list(items)
-        else:
-            items = []
-        self._items = items
-
-    @property
-    def frozen(self):
-        return self._frozen
-
-    def freeze(self):
-        self._frozen = True
-
-    def __getitem__(self, index):
-        return self._items[index]
-
-    def __setitem__(self, index, value):
-        if self._frozen:
-            raise RuntimeError("Cannot modify frozen list.")
-        self._items[index] = value
-
-    def __delitem__(self, index):
-        if self._frozen:
-            raise RuntimeError("Cannot modify frozen list.")
-        del self._items[index]
-
-    def __len__(self):
-        return self._items.__len__()
-
-    def __iter__(self):
-        return self._items.__iter__()
-
-    def __reversed__(self):
-        return self._items.__reversed__()
-
-    def __eq__(self, other):
-        return list(self) == other
-
-    def __le__(self, other):
-        return list(self) <= other
-
-    def insert(self, pos, item):
-        if self._frozen:
-            raise RuntimeError("Cannot modify frozen list.")
-        self._items.insert(pos, item)
-
-    def __repr__(self):
-        return f"<FrozenList(frozen={self._frozen}, {self._items!r})>"
-
-    def __hash__(self):
-        if self._frozen:
-            return hash(tuple(self))
-        else:
-            raise RuntimeError("Cannot hash unfrozen list.")
+from . import converters, exceptions, filters, setters, validators
+from ._cmp import cmp_using
+from ._config import get_run_validators, set_run_validators
+from ._funcs import asdict, assoc, astuple, has, resolve_types
+from ._make import (
+    NOTHING,
+    Attribute,
+    Converter,
+    Factory,
+    _Nothing,
+    attrib,
+    attrs,
+    evolve,
+    fields,
+    fields_dict,
+    make_class,
+    validate,
+)
+from ._next_gen import define, field, frozen, mutable
+from ._version_info import VersionInfo
 
 
-PyFrozenList = FrozenList
+s = attributes = attrs
+ib = attr = attrib
+dataclass = partial(attrs, auto_attribs=True)  # happy Easter ;)
 
 
-if not NO_EXTENSIONS:
-    try:
-        from ._frozenlist import FrozenList as CFrozenList  # type: ignore
-    except ImportError:  # pragma: no cover
-        pass
-    else:
-        FrozenList = CFrozenList  # type: ignore
+class AttrsInstance(Protocol):
+    pass
+
+
+NothingType = Literal[_Nothing.NOTHING]
+
+__all__ = [
+    "NOTHING",
+    "Attribute",
+    "AttrsInstance",
+    "Converter",
+    "Factory",
+    "NothingType",
+    "asdict",
+    "assoc",
+    "astuple",
+    "attr",
+    "attrib",
+    "attributes",
+    "attrs",
+    "cmp_using",
+    "converters",
+    "define",
+    "evolve",
+    "exceptions",
+    "field",
+    "fields",
+    "fields_dict",
+    "filters",
+    "frozen",
+    "get_run_validators",
+    "has",
+    "ib",
+    "make_class",
+    "mutable",
+    "resolve_types",
+    "s",
+    "set_run_validators",
+    "setters",
+    "validate",
+    "validators",
+]
+
+
+def _make_getattr(mod_name: str) -> Callable:
+    """
+    Create a metadata proxy for packaging information that uses *mod_name* in
+    its warnings and errors.
+    """
+
+    def __getattr__(name: str) -> str:
+        if name not in ("__version__", "__version_info__"):
+            msg = f"module {mod_name} has no attribute {name}"
+            raise AttributeError(msg)
+
+        from importlib.metadata import metadata
+
+        meta = metadata("attrs")
+
+        if name == "__version_info__":
+            return VersionInfo._from_version_string(meta["version"])
+
+        return meta["version"]
+
+    return __getattr__
+
+
+__getattr__ = _make_getattr(__name__)
