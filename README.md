@@ -1,15 +1,15 @@
 # Installation
-> `npm install --save @types/serve-static`
+> `npm install --save @types/node`
 
 # Summary
-This package contains type definitions for serve-static (https://github.com/expressjs/serve-static).
+This package contains type definitions for node (https://nodejs.org/).
 
 # Details
-Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/serve-static.
+Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node.
 
 ### Additional Details
- * Last updated: Sat, 07 Jun 2025 02:15:25 GMT
- * Dependencies: [@types/http-errors](https://npmjs.com/package/@types/http-errors), [@types/node](https://npmjs.com/package/@types/node), [@types/send](https://npmjs.com/package/@types/send)
+ * Last updated: Fri, 08 Aug 2025 16:38:49 GMT
+ * Dependencies: [undici-types](https://npmjs.com/package/undici-types)
 
 # Credits
-These definitions were written by [Uros Smolnik](https://github.com/urossmolnik), [Linus Unnebäck](https://github.com/LinusU), [Devansh Jethmalani](https://github.com/devanshj), and [Sebastian Beltran](https://github.com/bjohansebas).
+These definitions were written by [Microsoft TypeScript](https://github.com/Microsoft), [Alberto Schiabel](https://github.com/jkomyno), [Andrew Makarov](https://github.com/r3nya), [Benjamin Toueg](https://github.com/btoueg), [David Junger](https://github.com/touffy), [Mohsen Azimi](https://github.com/mohsen1), [Nikita Galkin](https://github.com/galkin), [Sebastian Silbermann](https://github.com/eps1lon), [Wilco Bakker](https://github.com/WilcoBakker), [Marcin Kopacz](https://github.com/chyzwar), [Trivikram Kamat](https://github.com/trivikr), [Junxiao Shi](https://github.com/yoursunny), [Ilia Baryshnikov](https://github.com/qwelias), [ExE Boss](https://github.com/ExE-Boss), [Piotr Błażejewicz](https://github.com/peterblazejewicz), [Anna Henningsen](https://github.com/addaleax), [Victor Perin](https://github.com/victorperin), [NodeJS Contributors](https://github.com/NodeJS), [Linus Unnebäck](https://github.com/LinusU), [wafuwafu13](https://github.com/wafuwafu13), [Matteo Collina](https://github.com/mcollina), [Dmitry Semigradsky](https://github.com/Semigradsky), [René](https://github.com/Renegade334), and [Yagiz Nizipli](https://github.com/anonrig).
