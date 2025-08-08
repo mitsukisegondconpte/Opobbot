@@ -4,94 +4,261 @@
 # Copyright (c) 2005-2020, Ilya Etingof <etingof@gmail.com>
 # License: https://pyasn1.readthedocs.io/en/latest/license.html
 #
+from collections import OrderedDict
 import warnings
 
+from pyasn1 import debug
 from pyasn1 import error
-from pyasn1.codec.cer import encoder
+from pyasn1.compat import _MISSING
+from pyasn1.type import base
+from pyasn1.type import char
+from pyasn1.type import tag
 from pyasn1.type import univ
+from pyasn1.type import useful
 
-__all__ = ['Encoder', 'encode']
+__all__ = ['encode']
 
-
-class SetEncoder(encoder.SetEncoder):
-    @staticmethod
-    def _componentSortKey(componentAndType):
-        """Sort SET components by tag
-
-        Sort depending on the actual Choice value (dynamic sort)
-        """
-        component, asn1Spec = componentAndType
-
-        if asn1Spec is None:
-            compType = component
-        else:
-            compType = asn1Spec
-
-        if compType.typeId == univ.Choice.typeId and not compType.tagSet:
-            if asn1Spec is None:
-                return component.getComponent().tagSet
-            else:
-                # TODO: move out of sorting key function
-                names = [namedType.name for namedType in asn1Spec.componentType.namedTypes
-                         if namedType.name in component]
-                if len(names) != 1:
-                    raise error.PyAsn1Error(
-                        '%s components for Choice at %r' % (len(names) and 'Multiple ' or 'None ', component))
-
-                # TODO: support nested CHOICE ordering
-                return asn1Spec[names[0]].tagSet
-
-        else:
-            return compType.tagSet
+LOG = debug.registerLoggee(__name__, flags=debug.DEBUG_ENCODER)
 
 
-TAG_MAP = encoder.TAG_MAP.copy()
-
-TAG_MAP.update({
-    # Set & SetOf have same tags
-    univ.Set.tagSet: SetEncoder()
-})
-
-TYPE_MAP = encoder.TYPE_MAP.copy()
-
-TYPE_MAP.update({
-    # Set & SetOf have same tags
-    univ.Set.typeId: SetEncoder()
-})
+class AbstractItemEncoder(object):
+    def encode(self, value, encodeFun, **options):
+        raise error.PyAsn1Error('Not implemented')
 
 
-class SingleItemEncoder(encoder.SingleItemEncoder):
-    fixedDefLengthMode = True
-    fixedChunkSize = 0
+class BooleanEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return bool(value)
+
+
+class IntegerEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return int(value)
+
+
+class BitStringEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return str(value)
+
+
+class OctetStringEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return value.asOctets()
+
+
+class TextStringEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return str(value)
+
+
+class NullEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return None
+
+
+class ObjectIdentifierEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return str(value)
+
+
+class RelativeOIDEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return str(value)
+
+
+class RealEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return float(value)
+
+
+class SetEncoder(AbstractItemEncoder):
+    protoDict = dict
+
+    def encode(self, value, encodeFun, **options):
+        inconsistency = value.isInconsistent
+        if inconsistency:
+            raise error.PyAsn1Error(
+                f"ASN.1 object {value.__class__.__name__} is inconsistent")
+
+        namedTypes = value.componentType
+        substrate = self.protoDict()
+
+        for idx, (key, subValue) in enumerate(value.items()):
+            if namedTypes and namedTypes[idx].isOptional and not value[idx].isValue:
+                continue
+            substrate[key] = encodeFun(subValue, **options)
+        return substrate
+
+
+class SequenceEncoder(SetEncoder):
+    protoDict = OrderedDict
+
+
+class SequenceOfEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        inconsistency = value.isInconsistent
+        if inconsistency:
+            raise error.PyAsn1Error(
+                f"ASN.1 object {value.__class__.__name__} is inconsistent")
+        return [encodeFun(x, **options) for x in value]
+
+
+class ChoiceEncoder(SequenceEncoder):
+    pass
+
+
+class AnyEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return value.asOctets()
+
+
+TAG_MAP = {
+    univ.Boolean.tagSet: BooleanEncoder(),
+    univ.Integer.tagSet: IntegerEncoder(),
+    univ.BitString.tagSet: BitStringEncoder(),
+    univ.OctetString.tagSet: OctetStringEncoder(),
+    univ.Null.tagSet: NullEncoder(),
+    univ.ObjectIdentifier.tagSet: ObjectIdentifierEncoder(),
+    univ.RelativeOID.tagSet: RelativeOIDEncoder(),
+    univ.Enumerated.tagSet: IntegerEncoder(),
+    univ.Real.tagSet: RealEncoder(),
+    # Sequence & Set have same tags as SequenceOf & SetOf
+    univ.SequenceOf.tagSet: SequenceOfEncoder(),
+    univ.SetOf.tagSet: SequenceOfEncoder(),
+    univ.Choice.tagSet: ChoiceEncoder(),
+    # character string types
+    char.UTF8String.tagSet: TextStringEncoder(),
+    char.NumericString.tagSet: TextStringEncoder(),
+    char.PrintableString.tagSet: TextStringEncoder(),
+    char.TeletexString.tagSet: TextStringEncoder(),
+    char.VideotexString.tagSet: TextStringEncoder(),
+    char.IA5String.tagSet: TextStringEncoder(),
+    char.GraphicString.tagSet: TextStringEncoder(),
+    char.VisibleString.tagSet: TextStringEncoder(),
+    char.GeneralString.tagSet: TextStringEncoder(),
+    char.UniversalString.tagSet: TextStringEncoder(),
+    char.BMPString.tagSet: TextStringEncoder(),
+    # useful types
+    useful.ObjectDescriptor.tagSet: OctetStringEncoder(),
+    useful.GeneralizedTime.tagSet: OctetStringEncoder(),
+    useful.UTCTime.tagSet: OctetStringEncoder()
+}
+
+# Put in ambiguous & non-ambiguous types for faster codec lookup
+TYPE_MAP = {
+    univ.Boolean.typeId: BooleanEncoder(),
+    univ.Integer.typeId: IntegerEncoder(),
+    univ.BitString.typeId: BitStringEncoder(),
+    univ.OctetString.typeId: OctetStringEncoder(),
+    univ.Null.typeId: NullEncoder(),
+    univ.ObjectIdentifier.typeId: ObjectIdentifierEncoder(),
+    univ.RelativeOID.typeId: RelativeOIDEncoder(),
+    univ.Enumerated.typeId: IntegerEncoder(),
+    univ.Real.typeId: RealEncoder(),
+    # Sequence & Set have same tags as SequenceOf & SetOf
+    univ.Set.typeId: SetEncoder(),
+    univ.SetOf.typeId: SequenceOfEncoder(),
+    univ.Sequence.typeId: SequenceEncoder(),
+    univ.SequenceOf.typeId: SequenceOfEncoder(),
+    univ.Choice.typeId: ChoiceEncoder(),
+    univ.Any.typeId: AnyEncoder(),
+    # character string types
+    char.UTF8String.typeId: OctetStringEncoder(),
+    char.NumericString.typeId: OctetStringEncoder(),
+    char.PrintableString.typeId: OctetStringEncoder(),
+    char.TeletexString.typeId: OctetStringEncoder(),
+    char.VideotexString.typeId: OctetStringEncoder(),
+    char.IA5String.typeId: OctetStringEncoder(),
+    char.GraphicString.typeId: OctetStringEncoder(),
+    char.VisibleString.typeId: OctetStringEncoder(),
+    char.GeneralString.typeId: OctetStringEncoder(),
+    char.UniversalString.typeId: OctetStringEncoder(),
+    char.BMPString.typeId: OctetStringEncoder(),
+    # useful types
+    useful.ObjectDescriptor.typeId: OctetStringEncoder(),
+    useful.GeneralizedTime.typeId: OctetStringEncoder(),
+    useful.UTCTime.typeId: OctetStringEncoder()
+}
+
+
+class SingleItemEncoder(object):
 
     TAG_MAP = TAG_MAP
     TYPE_MAP = TYPE_MAP
 
+    def __init__(self, tagMap=_MISSING, typeMap=_MISSING, **ignored):
+        self._tagMap = tagMap if tagMap is not _MISSING else self.TAG_MAP
+        self._typeMap = typeMap if typeMap is not _MISSING else self.TYPE_MAP
 
-class Encoder(encoder.Encoder):
+    def __call__(self, value, **options):
+        if not isinstance(value, base.Asn1Item):
+            raise error.PyAsn1Error(
+                'value is not valid (should be an instance of an ASN.1 Item)')
+
+        if LOG:
+            debug.scope.push(type(value).__name__)
+            LOG('encoder called for type %s '
+                '<%s>' % (type(value).__name__, value.prettyPrint()))
+
+        tagSet = value.tagSet
+
+        try:
+            concreteEncoder = self._typeMap[value.typeId]
+
+        except KeyError:
+            # use base type for codec lookup to recover untagged types
+            baseTagSet = tag.TagSet(
+                value.tagSet.baseTag, value.tagSet.baseTag)
+
+            try:
+                concreteEncoder = self._tagMap[baseTagSet]
+
+            except KeyError:
+                raise error.PyAsn1Error('No encoder for %s' % (value,))
+
+        if LOG:
+            LOG('using value codec %s chosen by '
+                '%s' % (concreteEncoder.__class__.__name__, tagSet))
+
+        pyObject = concreteEncoder.encode(value, self, **options)
+
+        if LOG:
+            LOG('encoder %s produced: '
+                '%s' % (type(concreteEncoder).__name__, repr(pyObject)))
+            debug.scope.pop()
+
+        return pyObject
+
+
+class Encoder(object):
     SINGLE_ITEM_ENCODER = SingleItemEncoder
 
+    def __init__(self, **options):
+        self._singleItemEncoder = self.SINGLE_ITEM_ENCODER(**options)
 
-#: Turns ASN.1 object into DER octet stream.
+    def __call__(self, pyObject, asn1Spec=None, **options):
+        return self._singleItemEncoder(
+            pyObject, asn1Spec=asn1Spec, **options)
+
+
+#: Turns ASN.1 object into a Python built-in type object(s).
 #:
 #: Takes any ASN.1 object (e.g. :py:class:`~pyasn1.type.base.PyAsn1Item` derivative)
-#: walks all its components recursively and produces a DER octet stream.
+#: walks all its components recursively and produces a Python built-in type or a tree
+#: of those.
+#:
+#: One exception is that instead of :py:class:`dict`, the :py:class:`OrderedDict`
+#: is used to preserve ordering of the components in ASN.1 SEQUENCE.
 #:
 #: Parameters
 #: ----------
-#: value: either a Python or pyasn1 object (e.g. :py:class:`~pyasn1.type.base.PyAsn1Item` derivative)
-#:     A Python or pyasn1 object to encode. If Python object is given, `asnSpec`
-#:     parameter is required to guide the encoding process.
-#:
-#: Keyword Args
-#: ------------
-#: asn1Spec:
-#:     Optional ASN.1 schema or value object e.g. :py:class:`~pyasn1.type.base.PyAsn1Item` derivative
+#  asn1Value: any pyasn1 object (e.g. :py:class:`~pyasn1.type.base.PyAsn1Item` derivative)
+#:     pyasn1 object to encode (or a tree of them)
 #:
 #: Returns
 #: -------
-#: : :py:class:`bytes`
-#:     Given ASN.1 object encoded into BER octet-stream
+#: : :py:class:`object`
+#:     Python built-in type instance (or a tree of them)
 #:
 #: Raises
 #: ------
@@ -100,24 +267,16 @@ class Encoder(encoder.Encoder):
 #:
 #: Examples
 #: --------
-#: Encode Python value into DER with ASN.1 schema
-#:
-#: .. code-block:: pycon
-#:
-#:    >>> seq = SequenceOf(componentType=Integer())
-#:    >>> encode([1, 2, 3], asn1Spec=seq)
-#:    b'0\t\x02\x01\x01\x02\x01\x02\x02\x01\x03'
-#:
-#: Encode ASN.1 value object into DER
+#: Encode ASN.1 value object into native Python types
 #:
 #: .. code-block:: pycon
 #:
 #:    >>> seq = SequenceOf(componentType=Integer())
 #:    >>> seq.extend([1, 2, 3])
 #:    >>> encode(seq)
-#:    b'0\t\x02\x01\x01\x02\x01\x02\x02\x01\x03'
+#:    [1, 2, 3]
 #:
-encode = Encoder()
+encode = SingleItemEncoder()
 
 def __getattr__(attr: str):
     if newAttr := {"tagMap": "TAG_MAP", "typeMap": "TYPE_MAP"}.get(attr):
