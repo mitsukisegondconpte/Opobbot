@@ -1,0 +1,402 @@
+# ================================
+# WhatsApp Music Bot - Git Ignore
+# ================================
+
+# ================================
+# Environment & Configuration
+# ================================
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Configuration overrides
+config.local.js
+config.override.js
+
+# ================================
+# Authentication & Sessions
+# ================================
+
+# WhatsApp session files
+auth_info/
+session/
+sessions/
+*.session
+*.session-journal
+
+# Telegram session files
+*.session*
+whatsapp_music_bot.session
+whatsapp_music_bot.session-journal
+
+# API keys and secrets
+secrets.json
+credentials.json
+api-keys.json
+
+# ================================
+# Dependencies
+# ================================
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+.ENV/
+.env/
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# ================================
+# Logs & Debug
+# ================================
+
+# Log files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# ================================
+# Temporary Files
+# ================================
+
+# Temporary directories
+tmp/
+temp/
+.tmp/
+.temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ================================
+# Audio & Media Files
+# ================================
+
+# Downloaded audio files
+*.mp3
+*.mp4
+*.m4a
+*.wav
+*.ogg
+*.aac
+*.flac
+
+# Image files (if downloaded)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.ico
+*.webp
+
+# Video files
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+
+# ================================
+# Database Files
+# ================================
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Database dumps
+*.sql
+*.dump
+
+# ================================
+# Cache & Storage
+# ================================
+
+# Node.js cache
+.npm
+.eslintcache
+
+# Python cache
+.pytest_cache/
+.coverage
+
+# Babel cache
+.babel_cache/
+
+# Next.js cache
+.next/
+
+# Nuxt.js cache
+.nuxt/
+dist/
+
+# Gatsby files
+.cache/
+public/
+
+# ================================
+# IDE & Editor Files
+# ================================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ================================
+# Package Managers
+# ================================
+
+# Yarn
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# npm
+package-lock.json
+yarn.lock
+
+# ================================
+# Build & Deployment
+# ================================
+
+# Build directories
+build/
+dist/
+out/
+
+# Webpack
+.webpack/
+
+# Rollup
+.rollup.cache
+
+# Parcel
+.parcel-cache
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+
+# ================================
+# Testing
+# ================================
+
+# Jest
+coverage/
+.jest/
+
+# Mocha
+.mocha/
+
+# Test results
+test-results/
+junit.xml
+
+# ================================
+# Deployment & Production
+# ================================
+
+# Deployment files
+deploy.sh
+deployment/
+
+# Production builds
+*.tgz
+*.tar.gz
+
+# Heroku
+.heroku/
+
+# Render
+.render/
+
+# Vercel
+.vercel
+
+# Netlify
+.netlify/
+
+# ================================
+# Security
+# ================================
+
+# Private keys
+*.pem
+*.key
+*.p12
+*.pfx
+
+# SSL certificates
+*.crt
+*.cer
+
+# ================================
+# Backup Files
+# ================================
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# ================================
+# Custom Exclusions
+# ================================
+
+# Project specific temporary files
+qr-code.png
+whatsapp-qr.png
+
+# Custom logs
+bot.log
+telegram.log
+whatsapp.log
+
+# Audio processing temp files
+audio_temp/
+processing/
+
+# Game state backups
+game_states/
+saved_games/
+
+# Development files
+TODO.md
+NOTES.md
+dev-notes.txt
+
+# ================================
+# Platform Specific
+# ================================
+
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# macOS
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ================================
+# Archive Files
+# ================================
+
+# Compressed files
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.bz2
+*.xz
+
+# But keep the project archive if needed
+!project-archive.zip
+!whatsapp-bot.zip
